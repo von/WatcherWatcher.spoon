@@ -245,10 +245,10 @@ end
 
 function WW:setMenuBarIcon()
   self.log.d("Setting menubar icon")
-  local cameraInUse = not hs.fnutils.every(
+  local cameraInUse = self.monitorCameras and not hs.fnutils.every(
       hs.camera.allCameras(),
       function(c) return not c:isInUse() end)
-  local micInUse = not hs.fnutils.every(
+  local micInUse = self.monitorMics and not hs.fnutils.every(
       hs.audiodevice.allInputDevices(),
       function(m) return not m:inUse() end)
 
