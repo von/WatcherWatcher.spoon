@@ -28,7 +28,9 @@ WW.monitorCameras = true
 --- WW.monitorMics
 --- Variable
 --- If true (default), monitor microphones.
-WW.monitorMics = true
+--- Currently off due to bug in audiodevice callbacks:
+--- https://github.com/Hammerspoon/hammerspoon/issues/3057
+WW.monitorMics = false
 
 --- WW.enableMenubar
 --- Variable
