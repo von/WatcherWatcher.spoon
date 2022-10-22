@@ -37,6 +37,33 @@ WW.monitorMics = false
 --- If true (default), enable menubar.
 WW.enableMenubar = true
 
+--- WW.enableIcon
+--- Variable
+--- If true (default), enable desktop icon if a camera or mic is in use.
+WW.enableIcon = true
+
+--- WW.iconGeometry
+--- Variable
+--- Table with geometry for icon. Should be a square.
+--- Can have negative values for x and y, in which case they are treated
+--- as offsets from right or bottom of screen respectively.
+WW.iconGeometry = { x = -60, y = 20, w = 50, h = 50 }
+
+--- WW.iconFillColor
+--- Variable
+--- Table with fill color for icon.
+WW.iconFillColor = { alpha = 1.0, red = 1.0  }
+
+--- WW.iconBlink
+--- Variable
+--- Enable blinking of Icon?
+WW.iconBlink = true
+
+--- WW.iconBlinkInterval
+--- Variable
+--- Frequency of icon blinking in seconds
+WW.iconBlinkInterval = 1.0
+
 --- WW.menubarTitle
 --- Variable
 --- A table with the following keys:
@@ -162,6 +189,39 @@ function WW:start()
     self:setMenuBarIcon()
   end
 
+  if self.enableIcon then
+    self.log.d("Creating icon")
+    -- XXX I suspect this doesn't handle multiple screens correctly
+    local geometry = self.iconGeometry
+    -- Handle negative x or y as offsets from right or bottom
+    -- XXX Primary or main screen?
+    local screenFrame = hs.screen.primaryScreen():frame()
+    if geometry.x < 0 then
+      geometry.x = screenFrame.w + geometry.x
+    end
+    if geometry.y < 0 then
+      geometry.y = screenFrame.h + geometry.y
+    end
+    self.icon = hs.canvas.new(geometry)
+    if not self.icon then
+      self.e("Failed to create icon")
+      self.enableIcon = false
+    else
+      self.icon:appendElements({
+          -- A circle basically filling the canvas
+          type = "circle",
+          center = { x = ".5", y = ".5" },
+          radius = ".5",
+          fillColor = self.iconFillColor,
+          action = "fill"
+        })
+
+      self.iconTimer = hs.timer.new(
+        self.iconBlinkInterval,
+        hs.fnutils.partial(self.iconBlink, self))
+    end
+  end
+
   return self
 end
 
@@ -201,6 +261,11 @@ function WW:stop()
 
   if self.enableMenubar then
     self.menubar:removeFromMenuBar()
+  end
+
+  if self.enableIcon then
+    self.iconTimer:stop()
+    self.icon:hide()
   end
 
   return self
@@ -296,6 +361,59 @@ function WW:menubarCallback(modifiers)
   return t
 end
 
+--- WW:updateIcon()
+--- Method
+--- Update icon (red circle) on desktop based on current state of camera
+--- and micophone usage.
+--- Parameters:
+---   * Nothing
+---
+--- Returns:
+---   * Nothing
+function WW:updateIcon()
+  local cameraInUse = self.monitorCameras and not hs.fnutils.every(
+      hs.camera.allCameras(),
+      function(c) return not c:isInUse() end)
+  local micInUse = self.monitorMics and not hs.fnutils.every(
+      hs.audiodevice.allInputDevices(),
+      function(m) return not m:inUse() end)
+
+  if cameraInUse or micInUse then
+    if self.iconBlink then
+      self.log.d("Starting icon blinking")
+      self.iconTimer:start()
+    else
+      self.log.d("Showing icon")
+      self.icon:show()
+    end
+  else
+    if self.iconBlink then
+      self.log.d("Stopping icon blinking")
+      self.iconTimer:stop()
+      self.icon:hide()
+    else
+      self.log.d("Hiding icon")
+      self.icon:delete()
+    end
+  end
+end
+
+--- WW:iconBlink()
+--- Method
+--- Toggle the icon.
+--- Parameters:
+---   * None
+---
+--- Returns:
+---   * Nothing
+function WW:iconBlink()
+  if self.icon:isShowing() then
+    self.icon:hide()
+  else
+    self.icon:show()
+  end
+end
+
 --- WW:cameraWatcherCallback()
 --- Method
 --- Callback for hs.camera.setWatcherCallback()
@@ -351,6 +469,9 @@ function WW:cameraPropertyCallback(camera, prop, scope, eventnum)
     if self.enableMenubar then
       self:setMenuBarIcon()
     end
+  end
+  if self.enableIcon then
+    self:updateIcon()
   end
 end
 
