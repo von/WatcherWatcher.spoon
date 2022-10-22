@@ -1,0 +1,1202 @@
+[
+  {
+    "Constant" : [
+
+    ],
+    "submodules" : [
+
+    ],
+    "Function" : [
+
+    ],
+    "Variable" : [
+      {
+        "doc" : "If true (default), monitor cameras.",
+        "parameters" : [
+
+        ],
+        "name" : "monitorCameras",
+        "stripped_doc" : [
+          "If true (default), monitor cameras."
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher.monitorCameras",
+        "type" : "Variable",
+        "returns" : [
+
+        ],
+        "def" : "WatcherWatcher.monitorCameras",
+        "desc" : "If true (default), monitor cameras."
+      },
+      {
+        "doc" : "If true (default), monitor microphones.\nCurrently off due to bug in audiodevice callbacks:\nhttps:\/\/github.com\/Hammerspoon\/hammerspoon\/issues\/3057",
+        "parameters" : [
+
+        ],
+        "name" : "monitorMics",
+        "stripped_doc" : [
+          "If true (default), monitor microphones.",
+          "Currently off due to bug in audiodevice callbacks:",
+          "https:\/\/github.com\/Hammerspoon\/hammerspoon\/issues\/3057"
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher.monitorMics",
+        "type" : "Variable",
+        "returns" : [
+
+        ],
+        "def" : "WatcherWatcher.monitorMics",
+        "desc" : "If true (default), monitor microphones."
+      },
+      {
+        "doc" : "If true (default), enable menubar.",
+        "parameters" : [
+
+        ],
+        "name" : "enableMenubar",
+        "stripped_doc" : [
+          "If true (default), enable menubar."
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher.enableMenubar",
+        "type" : "Variable",
+        "returns" : [
+
+        ],
+        "def" : "WatcherWatcher.enableMenubar",
+        "desc" : "If true (default), enable menubar."
+      },
+      {
+        "doc" : "If true (default), enable desktop icon if a camera or mic is in use.",
+        "parameters" : [
+
+        ],
+        "name" : "enableIcon",
+        "stripped_doc" : [
+          "If true (default), enable desktop icon if a camera or mic is in use."
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher.enableIcon",
+        "type" : "Variable",
+        "returns" : [
+
+        ],
+        "def" : "WatcherWatcher.enableIcon",
+        "desc" : "If true (default), enable desktop icon if a camera or mic is in use."
+      },
+      {
+        "doc" : "Table with geometry for icon. Should be a square.\nCan have negative values for x and y, in which case they are treated\nas offsets from right or bottom of screen respectively.",
+        "parameters" : [
+
+        ],
+        "name" : "iconGeometry",
+        "stripped_doc" : [
+          "Table with geometry for icon. Should be a square.",
+          "Can have negative values for x and y, in which case they are treated",
+          "as offsets from right or bottom of screen respectively."
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher.iconGeometry",
+        "type" : "Variable",
+        "returns" : [
+
+        ],
+        "def" : "WatcherWatcher.iconGeometry",
+        "desc" : "Table with geometry for icon. Should be a square."
+      },
+      {
+        "doc" : "Table with fill color for icon.",
+        "parameters" : [
+
+        ],
+        "name" : "iconFillColor",
+        "stripped_doc" : [
+          "Table with fill color for icon."
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher.iconFillColor",
+        "type" : "Variable",
+        "returns" : [
+
+        ],
+        "def" : "WatcherWatcher.iconFillColor",
+        "desc" : "Table with fill color for icon."
+      },
+      {
+        "doc" : "Enable blinking of Icon?",
+        "parameters" : [
+
+        ],
+        "name" : "iconBlink",
+        "stripped_doc" : [
+          "Enable blinking of Icon?"
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher.iconBlink",
+        "type" : "Variable",
+        "returns" : [
+
+        ],
+        "def" : "WatcherWatcher.iconBlink",
+        "desc" : "Enable blinking of Icon?"
+      },
+      {
+        "doc" : "Frequency of icon blinking in seconds",
+        "parameters" : [
+
+        ],
+        "name" : "iconBlinkInterval",
+        "stripped_doc" : [
+          "Frequency of icon blinking in seconds"
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher.iconBlinkInterval",
+        "type" : "Variable",
+        "returns" : [
+
+        ],
+        "def" : "WatcherWatcher.iconBlinkInterval",
+        "desc" : "Frequency of icon blinking in seconds"
+      },
+      {
+        "doc" : "A table with the following keys:\n  * cameraInUse: Menubar title if a camera is in use.\n  * micInUse: Menubar title if a microphone is in use.\n  * cameraAndMicInUse: Menubar title if a camera and a microphone are in use.\n  * nothingInUse: Menubar title if nothing is in use.",
+        "parameters" : [
+
+        ],
+        "name" : "menubarTitle",
+        "stripped_doc" : [
+          "A table with the following keys:",
+          "  * cameraInUse: Menubar title if a camera is in use.",
+          "  * micInUse: Menubar title if a microphone is in use.",
+          "  * cameraAndMicInUse: Menubar title if a camera and a microphone are in use.",
+          "  * nothingInUse: Menubar title if nothing is in use."
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher.menubarTitle",
+        "type" : "Variable",
+        "returns" : [
+
+        ],
+        "def" : "WatcherWatcher.menubarTitle",
+        "desc" : "A table with the following keys:"
+      },
+      {
+        "doc" : "A table with the following keys:\n  * cameraInUse: callback when a camera becomes in use.\n    This function should take a single parameter of a hs.camera instance\n    and return nothing.\n  * cameraNotInUse: callback when a camera becomes not in use.\n    This function should take a single parameter of a hs.camera instance\n    and return nothing.\n  * micInUse: callback for when a microphone becomes in use.\n    This function should take a single parameter of a hs.audiodevice instance\n    and return nothing.\n  * micNotInUse: callback for when a microphone becomes not in use.\n    This function should take a single parameter of a hs.audiodevice instance\n    and return nothing.",
+        "parameters" : [
+
+        ],
+        "name" : "callbacks",
+        "stripped_doc" : [
+          "A table with the following keys:",
+          "  * cameraInUse: callback when a camera becomes in use.",
+          "    This function should take a single parameter of a hs.camera instance",
+          "    and return nothing.",
+          "  * cameraNotInUse: callback when a camera becomes not in use.",
+          "    This function should take a single parameter of a hs.camera instance",
+          "    and return nothing.",
+          "  * micInUse: callback for when a microphone becomes in use.",
+          "    This function should take a single parameter of a hs.audiodevice instance",
+          "    and return nothing.",
+          "  * micNotInUse: callback for when a microphone becomes not in use.",
+          "    This function should take a single parameter of a hs.audiodevice instance",
+          "    and return nothing."
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher.callbacks",
+        "type" : "Variable",
+        "returns" : [
+
+        ],
+        "def" : "WatcherWatcher.callbacks",
+        "desc" : "A table with the following keys:"
+      }
+    ],
+    "stripped_doc" : [
+
+    ],
+    "Deprecated" : [
+
+    ],
+    "type" : "Module",
+    "desc" : "UNKNOWN DESC",
+    "Constructor" : [
+
+    ],
+    "doc" : "",
+    "Field" : [
+
+    ],
+    "Command" : [
+
+    ],
+    "Method" : [
+      {
+        "doc" : "Enable or disable debugging\n\nParameters:\n * enable - Boolean indicating whether debugging should be on\n\nReturns:\n * Nothing",
+        "parameters" : [
+          " * enable - Boolean indicating whether debugging should be on",
+          ""
+        ],
+        "name" : "debug",
+        "stripped_doc" : [
+          "Enable or disable debugging",
+          ""
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher:debug(enable)",
+        "type" : "Method",
+        "returns" : [
+          " * Nothing"
+        ],
+        "def" : "WatcherWatcher:debug(enable)",
+        "desc" : "Enable or disable debugging"
+      },
+      {
+        "doc" : "Initializes the WW spoon\nWhen a user calls hs.loadSpoon(), Hammerspoon will execute init()\nDo generally not perform any work, map any hotkeys, start any timers\/watchers\/etc.\nin the main scope of your init.lua. Instead, it should simply prepare an object\nwith methods to be used later, then return the object.\n\nParameters:\n * None\n\nReturns:\n * WW object",
+        "parameters" : [
+          " * None",
+          ""
+        ],
+        "name" : "init",
+        "stripped_doc" : [
+          "Initializes the WW spoon",
+          "When a user calls hs.loadSpoon(), Hammerspoon will execute init()",
+          "Do generally not perform any work, map any hotkeys, start any timers\/watchers\/etc.",
+          "in the main scope of your init.lua. Instead, it should simply prepare an object",
+          "with methods to be used later, then return the object.",
+          ""
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher:init()",
+        "type" : "Method",
+        "returns" : [
+          " * WW object"
+        ],
+        "def" : "WatcherWatcher:init()",
+        "desc" : "Initializes the WW spoon"
+      },
+      {
+        "doc" : "Start background activity.\n\nParameters:\n * None\n\nReturns:\n * WW object",
+        "parameters" : [
+          " * None",
+          ""
+        ],
+        "name" : "start",
+        "stripped_doc" : [
+          "Start background activity.",
+          ""
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher:start()",
+        "type" : "Method",
+        "returns" : [
+          " * WW object"
+        ],
+        "def" : "WatcherWatcher:start()",
+        "desc" : "Start background activity."
+      },
+      {
+        "doc" : "Stop background activity.\n\nParameters:\n * None\n\nReturns:\n * WW object",
+        "parameters" : [
+          " * None",
+          ""
+        ],
+        "name" : "stop",
+        "stripped_doc" : [
+          "Stop background activity.",
+          ""
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher:stop()",
+        "type" : "Method",
+        "returns" : [
+          " * WW object"
+        ],
+        "def" : "WatcherWatcher:stop()",
+        "desc" : "Stop background activity."
+      },
+      {
+        "doc" : "The method accepts a single parameter, which is a table. The keys of the table\nare strings that describe the action performed, and the values of the table are\ntables containing modifiers and keynames\/keycodes. E.g.\n  {\n    f1 = {{\"cmd\", \"alt\"}, \"f\"},\n    f2 = {{\"cmd\", \"alt\"}, \"g\"}\n   }\n\n\nParameters:\n * mapping - Table of action to key mappings\n\nReturns:\n * WW object",
+        "parameters" : [
+          " * mapping - Table of action to key mappings",
+          ""
+        ],
+        "name" : "bindHotKeys",
+        "stripped_doc" : [
+          "The method accepts a single parameter, which is a table. The keys of the table",
+          "are strings that describe the action performed, and the values of the table are",
+          "tables containing modifiers and keynames\/keycodes. E.g.",
+          "  {",
+          "    f1 = {{\"cmd\", \"alt\"}, \"f\"},",
+          "    f2 = {{\"cmd\", \"alt\"}, \"g\"}",
+          "   }",
+          "",
+          ""
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher:bindHotKeys(table)",
+        "type" : "Method",
+        "returns" : [
+          " * WW object"
+        ],
+        "def" : "WatcherWatcher:bindHotKeys(table)",
+        "desc" : "The method accepts a single parameter, which is a table. The keys of the table"
+      },
+      {
+        "doc" : "Return a list of cameras that are in use.\nParameters:\n  * None\n\nReturns:\n  * List of cameras that are in use.",
+        "parameters" : [
+          "  * None",
+          ""
+        ],
+        "name" : "camerasInUse",
+        "stripped_doc" : [
+          "Return a list of cameras that are in use."
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher:camerasInUse()",
+        "type" : "Method",
+        "returns" : [
+          "  * List of cameras that are in use."
+        ],
+        "def" : "WatcherWatcher:camerasInUse()",
+        "desc" : "Return a list of cameras that are in use."
+      },
+      {
+        "doc" : "Return a list of microphones that are in use.\nParameters:\n  * None\n\nReturns:\n  * List of microphones that are in use.",
+        "parameters" : [
+          "  * None",
+          ""
+        ],
+        "name" : "micsInUse",
+        "stripped_doc" : [
+          "Return a list of microphones that are in use."
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher:micsInUse()",
+        "type" : "Method",
+        "returns" : [
+          "  * List of microphones that are in use."
+        ],
+        "def" : "WatcherWatcher:micsInUse()",
+        "desc" : "Return a list of microphones that are in use."
+      },
+      {
+        "doc" : "Set the menubar icon depending on if any camera or microphone is in use.\nParameters:\n  * None\n\nReturns:\n  * Nothing",
+        "parameters" : [
+          "  * None",
+          ""
+        ],
+        "name" : "setMenuBarIcon",
+        "stripped_doc" : [
+          "Set the menubar icon depending on if any camera or microphone is in use."
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher:setMenuBarIcon()",
+        "type" : "Method",
+        "returns" : [
+          "  * Nothing"
+        ],
+        "def" : "WatcherWatcher:setMenuBarIcon()",
+        "desc" : "Set the menubar icon depending on if any camera or microphone is in use."
+      },
+      {
+        "doc" : "Callback for when user clicks on the menubar item.\nParameters:\n  * table indicating which keyboard modifiers were held down\n\nReturns:\n  * table with menu - see hs.menubar.setMenu()",
+        "parameters" : [
+          "  * table indicating which keyboard modifiers were held down",
+          ""
+        ],
+        "name" : "menubarCallback",
+        "stripped_doc" : [
+          "Callback for when user clicks on the menubar item."
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher:menubarCallback()",
+        "type" : "Method",
+        "returns" : [
+          "  * table with menu - see hs.menubar.setMenu()"
+        ],
+        "def" : "WatcherWatcher:menubarCallback()",
+        "desc" : "Callback for when user clicks on the menubar item."
+      },
+      {
+        "doc" : "Update icon (red circle) on desktop based on current state of camera\nand micophone usage.\nParameters:\n  * Nothing\n\nReturns:\n  * Nothing",
+        "parameters" : [
+          "  * Nothing",
+          ""
+        ],
+        "name" : "updateIcon",
+        "stripped_doc" : [
+          "Update icon (red circle) on desktop based on current state of camera",
+          "and micophone usage."
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher:updateIcon()",
+        "type" : "Method",
+        "returns" : [
+          "  * Nothing"
+        ],
+        "def" : "WatcherWatcher:updateIcon()",
+        "desc" : "Update icon (red circle) on desktop based on current state of camera"
+      },
+      {
+        "doc" : "Toggle the icon.\nParameters:\n  * None\n\nReturns:\n  * Nothing",
+        "parameters" : [
+          "  * None",
+          ""
+        ],
+        "name" : "iconBlink",
+        "stripped_doc" : [
+          "Toggle the icon."
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher:iconBlink()",
+        "type" : "Method",
+        "returns" : [
+          "  * Nothing"
+        ],
+        "def" : "WatcherWatcher:iconBlink()",
+        "desc" : "Toggle the icon."
+      },
+      {
+        "doc" : "Callback for hs.camera.setWatcherCallback()\nParameters:\n  * hs.camera device\n  * A string, either \"Added\" or \"Removed\"\n\nReturns:\n  * Nothing",
+        "parameters" : [
+          "  * hs.camera device",
+          "  * A string, either \"Added\" or \"Removed\"",
+          ""
+        ],
+        "name" : "cameraWatcherCallback",
+        "stripped_doc" : [
+          "Callback for hs.camera.setWatcherCallback()"
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher:cameraWatcherCallback()",
+        "type" : "Method",
+        "returns" : [
+          "  * Nothing"
+        ],
+        "def" : "WatcherWatcher:cameraWatcherCallback()",
+        "desc" : "Callback for hs.camera.setWatcherCallback()"
+      },
+      {
+        "doc" : "Callback for hs.camera.setPropertyWatcherCallback()\nParameters:\n  * hs.camera instance\n  * property (expected to be \"gone\")\n  * scope (expected to be \"glob\")\n  * event number (ignored, expected to be 0)\n\nReturns:\n  * Nothing",
+        "parameters" : [
+          "  * hs.camera instance",
+          "  * property (expected to be \"gone\")",
+          "  * scope (expected to be \"glob\")",
+          "  * event number (ignored, expected to be 0)",
+          ""
+        ],
+        "name" : "cameraPropertyCallback",
+        "stripped_doc" : [
+          "Callback for hs.camera.setPropertyWatcherCallback()"
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher:cameraPropertyCallback()",
+        "type" : "Method",
+        "returns" : [
+          "  * Nothing"
+        ],
+        "def" : "WatcherWatcher:cameraPropertyCallback()",
+        "desc" : "Callback for hs.camera.setPropertyWatcherCallback()"
+      },
+      {
+        "doc" : "Callback for hs.camera.watcher\nParameters:\n  * String with change\n\nReturns:\n  * Nothing",
+        "parameters" : [
+          "  * String with change",
+          ""
+        ],
+        "name" : "audiodeviceWatcherCallback",
+        "stripped_doc" : [
+          "Callback for hs.camera.watcher"
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher:audiodeviceWatcherCallback()",
+        "type" : "Method",
+        "returns" : [
+          "  * Nothing"
+        ],
+        "def" : "WatcherWatcher:audiodeviceWatcherCallback()",
+        "desc" : "Callback for hs.camera.watcher"
+      },
+      {
+        "doc" : "Make sure we have callbacks set up for all input audiodevices.\nParameters:\n  * None\n\nReturns:\n  * Nothing",
+        "parameters" : [
+          "  * None",
+          ""
+        ],
+        "name" : "setupAudiodeviceCallbacks",
+        "stripped_doc" : [
+          "Make sure we have callbacks set up for all input audiodevices."
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher:setupAudiodeviceCallbacks()",
+        "type" : "Method",
+        "returns" : [
+          "  * Nothing"
+        ],
+        "def" : "WatcherWatcher:setupAudiodeviceCallbacks()",
+        "desc" : "Make sure we have callbacks set up for all input audiodevices."
+      },
+      {
+        "doc" : "Callback for audiodevice:watcherCallback()\nXXX This is not getting called.\n    See https:\/\/github.com\/Hammerspoon\/hammerspoon\/issues\/3057\nParameters:\n  * uid (string)\n  * eventname (string)\n  * scope (string)\n  * element (int)\n\nReturns:\n  * Nothing",
+        "parameters" : [
+          "  * uid (string)",
+          "  * eventname (string)",
+          "  * scope (string)",
+          "  * element (int)",
+          ""
+        ],
+        "name" : "audiodeviceCallback",
+        "stripped_doc" : [
+          "Callback for audiodevice:watcherCallback()",
+          "XXX This is not getting called.",
+          "    See https:\/\/github.com\/Hammerspoon\/hammerspoon\/issues\/3057"
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher:audiodeviceCallback()",
+        "type" : "Method",
+        "returns" : [
+          "  * Nothing"
+        ],
+        "def" : "WatcherWatcher:audiodeviceCallback()",
+        "desc" : "Callback for audiodevice:watcherCallback()"
+      }
+    ],
+    "items" : [
+      {
+        "doc" : "A table with the following keys:\n  * cameraInUse: callback when a camera becomes in use.\n    This function should take a single parameter of a hs.camera instance\n    and return nothing.\n  * cameraNotInUse: callback when a camera becomes not in use.\n    This function should take a single parameter of a hs.camera instance\n    and return nothing.\n  * micInUse: callback for when a microphone becomes in use.\n    This function should take a single parameter of a hs.audiodevice instance\n    and return nothing.\n  * micNotInUse: callback for when a microphone becomes not in use.\n    This function should take a single parameter of a hs.audiodevice instance\n    and return nothing.",
+        "parameters" : [
+
+        ],
+        "name" : "callbacks",
+        "stripped_doc" : [
+          "A table with the following keys:",
+          "  * cameraInUse: callback when a camera becomes in use.",
+          "    This function should take a single parameter of a hs.camera instance",
+          "    and return nothing.",
+          "  * cameraNotInUse: callback when a camera becomes not in use.",
+          "    This function should take a single parameter of a hs.camera instance",
+          "    and return nothing.",
+          "  * micInUse: callback for when a microphone becomes in use.",
+          "    This function should take a single parameter of a hs.audiodevice instance",
+          "    and return nothing.",
+          "  * micNotInUse: callback for when a microphone becomes not in use.",
+          "    This function should take a single parameter of a hs.audiodevice instance",
+          "    and return nothing."
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher.callbacks",
+        "type" : "Variable",
+        "returns" : [
+
+        ],
+        "def" : "WatcherWatcher.callbacks",
+        "desc" : "A table with the following keys:"
+      },
+      {
+        "doc" : "If true (default), enable desktop icon if a camera or mic is in use.",
+        "parameters" : [
+
+        ],
+        "name" : "enableIcon",
+        "stripped_doc" : [
+          "If true (default), enable desktop icon if a camera or mic is in use."
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher.enableIcon",
+        "type" : "Variable",
+        "returns" : [
+
+        ],
+        "def" : "WatcherWatcher.enableIcon",
+        "desc" : "If true (default), enable desktop icon if a camera or mic is in use."
+      },
+      {
+        "doc" : "If true (default), enable menubar.",
+        "parameters" : [
+
+        ],
+        "name" : "enableMenubar",
+        "stripped_doc" : [
+          "If true (default), enable menubar."
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher.enableMenubar",
+        "type" : "Variable",
+        "returns" : [
+
+        ],
+        "def" : "WatcherWatcher.enableMenubar",
+        "desc" : "If true (default), enable menubar."
+      },
+      {
+        "doc" : "Enable blinking of Icon?",
+        "parameters" : [
+
+        ],
+        "name" : "iconBlink",
+        "stripped_doc" : [
+          "Enable blinking of Icon?"
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher.iconBlink",
+        "type" : "Variable",
+        "returns" : [
+
+        ],
+        "def" : "WatcherWatcher.iconBlink",
+        "desc" : "Enable blinking of Icon?"
+      },
+      {
+        "doc" : "Frequency of icon blinking in seconds",
+        "parameters" : [
+
+        ],
+        "name" : "iconBlinkInterval",
+        "stripped_doc" : [
+          "Frequency of icon blinking in seconds"
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher.iconBlinkInterval",
+        "type" : "Variable",
+        "returns" : [
+
+        ],
+        "def" : "WatcherWatcher.iconBlinkInterval",
+        "desc" : "Frequency of icon blinking in seconds"
+      },
+      {
+        "doc" : "Table with fill color for icon.",
+        "parameters" : [
+
+        ],
+        "name" : "iconFillColor",
+        "stripped_doc" : [
+          "Table with fill color for icon."
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher.iconFillColor",
+        "type" : "Variable",
+        "returns" : [
+
+        ],
+        "def" : "WatcherWatcher.iconFillColor",
+        "desc" : "Table with fill color for icon."
+      },
+      {
+        "doc" : "Table with geometry for icon. Should be a square.\nCan have negative values for x and y, in which case they are treated\nas offsets from right or bottom of screen respectively.",
+        "parameters" : [
+
+        ],
+        "name" : "iconGeometry",
+        "stripped_doc" : [
+          "Table with geometry for icon. Should be a square.",
+          "Can have negative values for x and y, in which case they are treated",
+          "as offsets from right or bottom of screen respectively."
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher.iconGeometry",
+        "type" : "Variable",
+        "returns" : [
+
+        ],
+        "def" : "WatcherWatcher.iconGeometry",
+        "desc" : "Table with geometry for icon. Should be a square."
+      },
+      {
+        "doc" : "A table with the following keys:\n  * cameraInUse: Menubar title if a camera is in use.\n  * micInUse: Menubar title if a microphone is in use.\n  * cameraAndMicInUse: Menubar title if a camera and a microphone are in use.\n  * nothingInUse: Menubar title if nothing is in use.",
+        "parameters" : [
+
+        ],
+        "name" : "menubarTitle",
+        "stripped_doc" : [
+          "A table with the following keys:",
+          "  * cameraInUse: Menubar title if a camera is in use.",
+          "  * micInUse: Menubar title if a microphone is in use.",
+          "  * cameraAndMicInUse: Menubar title if a camera and a microphone are in use.",
+          "  * nothingInUse: Menubar title if nothing is in use."
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher.menubarTitle",
+        "type" : "Variable",
+        "returns" : [
+
+        ],
+        "def" : "WatcherWatcher.menubarTitle",
+        "desc" : "A table with the following keys:"
+      },
+      {
+        "doc" : "If true (default), monitor cameras.",
+        "parameters" : [
+
+        ],
+        "name" : "monitorCameras",
+        "stripped_doc" : [
+          "If true (default), monitor cameras."
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher.monitorCameras",
+        "type" : "Variable",
+        "returns" : [
+
+        ],
+        "def" : "WatcherWatcher.monitorCameras",
+        "desc" : "If true (default), monitor cameras."
+      },
+      {
+        "doc" : "If true (default), monitor microphones.\nCurrently off due to bug in audiodevice callbacks:\nhttps:\/\/github.com\/Hammerspoon\/hammerspoon\/issues\/3057",
+        "parameters" : [
+
+        ],
+        "name" : "monitorMics",
+        "stripped_doc" : [
+          "If true (default), monitor microphones.",
+          "Currently off due to bug in audiodevice callbacks:",
+          "https:\/\/github.com\/Hammerspoon\/hammerspoon\/issues\/3057"
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher.monitorMics",
+        "type" : "Variable",
+        "returns" : [
+
+        ],
+        "def" : "WatcherWatcher.monitorMics",
+        "desc" : "If true (default), monitor microphones."
+      },
+      {
+        "doc" : "Callback for audiodevice:watcherCallback()\nXXX This is not getting called.\n    See https:\/\/github.com\/Hammerspoon\/hammerspoon\/issues\/3057\nParameters:\n  * uid (string)\n  * eventname (string)\n  * scope (string)\n  * element (int)\n\nReturns:\n  * Nothing",
+        "parameters" : [
+          "  * uid (string)",
+          "  * eventname (string)",
+          "  * scope (string)",
+          "  * element (int)",
+          ""
+        ],
+        "name" : "audiodeviceCallback",
+        "stripped_doc" : [
+          "Callback for audiodevice:watcherCallback()",
+          "XXX This is not getting called.",
+          "    See https:\/\/github.com\/Hammerspoon\/hammerspoon\/issues\/3057"
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher:audiodeviceCallback()",
+        "type" : "Method",
+        "returns" : [
+          "  * Nothing"
+        ],
+        "def" : "WatcherWatcher:audiodeviceCallback()",
+        "desc" : "Callback for audiodevice:watcherCallback()"
+      },
+      {
+        "doc" : "Callback for hs.camera.watcher\nParameters:\n  * String with change\n\nReturns:\n  * Nothing",
+        "parameters" : [
+          "  * String with change",
+          ""
+        ],
+        "name" : "audiodeviceWatcherCallback",
+        "stripped_doc" : [
+          "Callback for hs.camera.watcher"
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher:audiodeviceWatcherCallback()",
+        "type" : "Method",
+        "returns" : [
+          "  * Nothing"
+        ],
+        "def" : "WatcherWatcher:audiodeviceWatcherCallback()",
+        "desc" : "Callback for hs.camera.watcher"
+      },
+      {
+        "doc" : "The method accepts a single parameter, which is a table. The keys of the table\nare strings that describe the action performed, and the values of the table are\ntables containing modifiers and keynames\/keycodes. E.g.\n  {\n    f1 = {{\"cmd\", \"alt\"}, \"f\"},\n    f2 = {{\"cmd\", \"alt\"}, \"g\"}\n   }\n\n\nParameters:\n * mapping - Table of action to key mappings\n\nReturns:\n * WW object",
+        "parameters" : [
+          " * mapping - Table of action to key mappings",
+          ""
+        ],
+        "name" : "bindHotKeys",
+        "stripped_doc" : [
+          "The method accepts a single parameter, which is a table. The keys of the table",
+          "are strings that describe the action performed, and the values of the table are",
+          "tables containing modifiers and keynames\/keycodes. E.g.",
+          "  {",
+          "    f1 = {{\"cmd\", \"alt\"}, \"f\"},",
+          "    f2 = {{\"cmd\", \"alt\"}, \"g\"}",
+          "   }",
+          "",
+          ""
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher:bindHotKeys(table)",
+        "type" : "Method",
+        "returns" : [
+          " * WW object"
+        ],
+        "def" : "WatcherWatcher:bindHotKeys(table)",
+        "desc" : "The method accepts a single parameter, which is a table. The keys of the table"
+      },
+      {
+        "doc" : "Callback for hs.camera.setPropertyWatcherCallback()\nParameters:\n  * hs.camera instance\n  * property (expected to be \"gone\")\n  * scope (expected to be \"glob\")\n  * event number (ignored, expected to be 0)\n\nReturns:\n  * Nothing",
+        "parameters" : [
+          "  * hs.camera instance",
+          "  * property (expected to be \"gone\")",
+          "  * scope (expected to be \"glob\")",
+          "  * event number (ignored, expected to be 0)",
+          ""
+        ],
+        "name" : "cameraPropertyCallback",
+        "stripped_doc" : [
+          "Callback for hs.camera.setPropertyWatcherCallback()"
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher:cameraPropertyCallback()",
+        "type" : "Method",
+        "returns" : [
+          "  * Nothing"
+        ],
+        "def" : "WatcherWatcher:cameraPropertyCallback()",
+        "desc" : "Callback for hs.camera.setPropertyWatcherCallback()"
+      },
+      {
+        "doc" : "Callback for hs.camera.setWatcherCallback()\nParameters:\n  * hs.camera device\n  * A string, either \"Added\" or \"Removed\"\n\nReturns:\n  * Nothing",
+        "parameters" : [
+          "  * hs.camera device",
+          "  * A string, either \"Added\" or \"Removed\"",
+          ""
+        ],
+        "name" : "cameraWatcherCallback",
+        "stripped_doc" : [
+          "Callback for hs.camera.setWatcherCallback()"
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher:cameraWatcherCallback()",
+        "type" : "Method",
+        "returns" : [
+          "  * Nothing"
+        ],
+        "def" : "WatcherWatcher:cameraWatcherCallback()",
+        "desc" : "Callback for hs.camera.setWatcherCallback()"
+      },
+      {
+        "doc" : "Return a list of cameras that are in use.\nParameters:\n  * None\n\nReturns:\n  * List of cameras that are in use.",
+        "parameters" : [
+          "  * None",
+          ""
+        ],
+        "name" : "camerasInUse",
+        "stripped_doc" : [
+          "Return a list of cameras that are in use."
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher:camerasInUse()",
+        "type" : "Method",
+        "returns" : [
+          "  * List of cameras that are in use."
+        ],
+        "def" : "WatcherWatcher:camerasInUse()",
+        "desc" : "Return a list of cameras that are in use."
+      },
+      {
+        "doc" : "Enable or disable debugging\n\nParameters:\n * enable - Boolean indicating whether debugging should be on\n\nReturns:\n * Nothing",
+        "parameters" : [
+          " * enable - Boolean indicating whether debugging should be on",
+          ""
+        ],
+        "name" : "debug",
+        "stripped_doc" : [
+          "Enable or disable debugging",
+          ""
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher:debug(enable)",
+        "type" : "Method",
+        "returns" : [
+          " * Nothing"
+        ],
+        "def" : "WatcherWatcher:debug(enable)",
+        "desc" : "Enable or disable debugging"
+      },
+      {
+        "doc" : "Toggle the icon.\nParameters:\n  * None\n\nReturns:\n  * Nothing",
+        "parameters" : [
+          "  * None",
+          ""
+        ],
+        "name" : "iconBlink",
+        "stripped_doc" : [
+          "Toggle the icon."
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher:iconBlink()",
+        "type" : "Method",
+        "returns" : [
+          "  * Nothing"
+        ],
+        "def" : "WatcherWatcher:iconBlink()",
+        "desc" : "Toggle the icon."
+      },
+      {
+        "doc" : "Initializes the WW spoon\nWhen a user calls hs.loadSpoon(), Hammerspoon will execute init()\nDo generally not perform any work, map any hotkeys, start any timers\/watchers\/etc.\nin the main scope of your init.lua. Instead, it should simply prepare an object\nwith methods to be used later, then return the object.\n\nParameters:\n * None\n\nReturns:\n * WW object",
+        "parameters" : [
+          " * None",
+          ""
+        ],
+        "name" : "init",
+        "stripped_doc" : [
+          "Initializes the WW spoon",
+          "When a user calls hs.loadSpoon(), Hammerspoon will execute init()",
+          "Do generally not perform any work, map any hotkeys, start any timers\/watchers\/etc.",
+          "in the main scope of your init.lua. Instead, it should simply prepare an object",
+          "with methods to be used later, then return the object.",
+          ""
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher:init()",
+        "type" : "Method",
+        "returns" : [
+          " * WW object"
+        ],
+        "def" : "WatcherWatcher:init()",
+        "desc" : "Initializes the WW spoon"
+      },
+      {
+        "doc" : "Callback for when user clicks on the menubar item.\nParameters:\n  * table indicating which keyboard modifiers were held down\n\nReturns:\n  * table with menu - see hs.menubar.setMenu()",
+        "parameters" : [
+          "  * table indicating which keyboard modifiers were held down",
+          ""
+        ],
+        "name" : "menubarCallback",
+        "stripped_doc" : [
+          "Callback for when user clicks on the menubar item."
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher:menubarCallback()",
+        "type" : "Method",
+        "returns" : [
+          "  * table with menu - see hs.menubar.setMenu()"
+        ],
+        "def" : "WatcherWatcher:menubarCallback()",
+        "desc" : "Callback for when user clicks on the menubar item."
+      },
+      {
+        "doc" : "Return a list of microphones that are in use.\nParameters:\n  * None\n\nReturns:\n  * List of microphones that are in use.",
+        "parameters" : [
+          "  * None",
+          ""
+        ],
+        "name" : "micsInUse",
+        "stripped_doc" : [
+          "Return a list of microphones that are in use."
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher:micsInUse()",
+        "type" : "Method",
+        "returns" : [
+          "  * List of microphones that are in use."
+        ],
+        "def" : "WatcherWatcher:micsInUse()",
+        "desc" : "Return a list of microphones that are in use."
+      },
+      {
+        "doc" : "Set the menubar icon depending on if any camera or microphone is in use.\nParameters:\n  * None\n\nReturns:\n  * Nothing",
+        "parameters" : [
+          "  * None",
+          ""
+        ],
+        "name" : "setMenuBarIcon",
+        "stripped_doc" : [
+          "Set the menubar icon depending on if any camera or microphone is in use."
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher:setMenuBarIcon()",
+        "type" : "Method",
+        "returns" : [
+          "  * Nothing"
+        ],
+        "def" : "WatcherWatcher:setMenuBarIcon()",
+        "desc" : "Set the menubar icon depending on if any camera or microphone is in use."
+      },
+      {
+        "doc" : "Make sure we have callbacks set up for all input audiodevices.\nParameters:\n  * None\n\nReturns:\n  * Nothing",
+        "parameters" : [
+          "  * None",
+          ""
+        ],
+        "name" : "setupAudiodeviceCallbacks",
+        "stripped_doc" : [
+          "Make sure we have callbacks set up for all input audiodevices."
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher:setupAudiodeviceCallbacks()",
+        "type" : "Method",
+        "returns" : [
+          "  * Nothing"
+        ],
+        "def" : "WatcherWatcher:setupAudiodeviceCallbacks()",
+        "desc" : "Make sure we have callbacks set up for all input audiodevices."
+      },
+      {
+        "doc" : "Start background activity.\n\nParameters:\n * None\n\nReturns:\n * WW object",
+        "parameters" : [
+          " * None",
+          ""
+        ],
+        "name" : "start",
+        "stripped_doc" : [
+          "Start background activity.",
+          ""
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher:start()",
+        "type" : "Method",
+        "returns" : [
+          " * WW object"
+        ],
+        "def" : "WatcherWatcher:start()",
+        "desc" : "Start background activity."
+      },
+      {
+        "doc" : "Stop background activity.\n\nParameters:\n * None\n\nReturns:\n * WW object",
+        "parameters" : [
+          " * None",
+          ""
+        ],
+        "name" : "stop",
+        "stripped_doc" : [
+          "Stop background activity.",
+          ""
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher:stop()",
+        "type" : "Method",
+        "returns" : [
+          " * WW object"
+        ],
+        "def" : "WatcherWatcher:stop()",
+        "desc" : "Stop background activity."
+      },
+      {
+        "doc" : "Update icon (red circle) on desktop based on current state of camera\nand micophone usage.\nParameters:\n  * Nothing\n\nReturns:\n  * Nothing",
+        "parameters" : [
+          "  * Nothing",
+          ""
+        ],
+        "name" : "updateIcon",
+        "stripped_doc" : [
+          "Update icon (red circle) on desktop based on current state of camera",
+          "and micophone usage."
+        ],
+        "notes" : [
+
+        ],
+        "signature" : "WatcherWatcher:updateIcon()",
+        "type" : "Method",
+        "returns" : [
+          "  * Nothing"
+        ],
+        "def" : "WatcherWatcher:updateIcon()",
+        "desc" : "Update icon (red circle) on desktop based on current state of camera"
+      }
+    ],
+    "name" : "WatcherWatcher"
+  }
+]

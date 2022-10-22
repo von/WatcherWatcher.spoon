@@ -20,51 +20,51 @@ WW.homepage=""
 WW.GREEN_DOT = "🟢"
 WW.RED_DOT = "🔴"
 
---- WW.monitorCameras
+--- WatcherWatcher.monitorCameras
 --- Variable
 --- If true (default), monitor cameras.
 WW.monitorCameras = true
 
---- WW.monitorMics
+--- WatcherWatcher.monitorMics
 --- Variable
 --- If true (not the default), monitor microphones.
 --- Currently off due to bug in audiodevice callbacks:
 --- https://github.com/Hammerspoon/hammerspoon/issues/3057
 WW.monitorMics = false
 
---- WW.enableMenubar
+--- WatcherWatcher.enableMenubar
 --- Variable
 --- If true (default), enable menubar.
 WW.enableMenubar = true
 
---- WW.enableIcon
+--- WatcherWatcher.enableIcon
 --- Variable
 --- If true (default), enable desktop icon if a camera or mic is in use.
 WW.enableIcon = true
 
---- WW.iconGeometry
+--- WatcherWatcher.iconGeometry
 --- Variable
 --- Table with geometry for icon. Should be a square.
 --- Can have negative values for x and y, in which case they are treated
 --- as offsets from right or bottom of screen respectively.
 WW.iconGeometry = { x = -60, y = 20, w = 50, h = 50 }
 
---- WW.iconFillColor
+--- WatcherWatcher.iconFillColor
 --- Variable
 --- Table with fill color for icon.
 WW.iconFillColor = { alpha = 1.0, red = 1.0  }
 
---- WW.iconBlink
+--- WatcherWatcher.iconBlink
 --- Variable
 --- Enable blinking of Icon?
 WW.iconBlink = true
 
---- WW.iconBlinkInterval
+--- WatcherWatcher.iconBlinkInterval
 --- Variable
 --- Frequency of icon blinking in seconds
 WW.iconBlinkInterval = 1.0
 
---- WW.menubarTitle
+--- WatcherWatcher.menubarTitle
 --- Variable
 --- A table with the following keys:
 ---   * cameraInUse: Menubar title if a camera is in use.
@@ -78,7 +78,7 @@ WW.menubarTitle = {
   nothingInUse = WW.GREEN_DOT
 }
 
---- WW.callbacks
+--- WatcherWatcher.callbacks
 --- Variable
 --- A table with the following keys:
 ---   * cameraInUse: callback when a camera becomes in use.
@@ -100,7 +100,7 @@ WW.callbacks = {
   micNotInUse = nil
 }
 
---- WW:debug(enable)
+--- WatcherWatcher:debug(enable)
 --- Method
 --- Enable or disable debugging
 ---
@@ -119,7 +119,7 @@ function WW:debug(enable)
   end
 end
 
---- WW:init()
+--- WatcherWatcher:init()
 --- Method
 --- Initializes the WW spoon
 --- When a user calls hs.loadSpoon(), Hammerspoon will execute init()
@@ -149,7 +149,7 @@ end
 --spotlight searches, etc. you should generally activate them in a :start()
 --method, and de-activate them in a :stop() method
 
---- WW:start()
+--- WatcherWatcher:start()
 --- Method
 --- Start background activity.
 ---
@@ -225,7 +225,7 @@ function WW:start()
   return self
 end
 
---- WW:stop()
+--- WatcherWatcher:stop()
 --- Method
 --- Stop background activity.
 ---
@@ -275,7 +275,7 @@ end
 -- If your Spoon provides actions that a user can map to hotkeys, you
 -- should expose a :bindHotKeys() method.
 
---- WW:bindHotKeys(table)
+--- WatcherWatcher:bindHotKeys(table)
 --- Method
 --- The method accepts a single parameter, which is a table. The keys of the table
 --- are strings that describe the action performed, and the values of the table are
@@ -301,7 +301,7 @@ function WW:bindHotKeys(mapping)
   return self
 end
 
---- WW:camerasInUse()
+--- WatcherWatcher:camerasInUse()
 --- Method
 --- Return a list of cameras that are in use.
 --- Parameters:
@@ -315,7 +315,7 @@ function WW:camerasInUse()
     function(c) return c:isInUse() end)
 end
 
---- WW:micsInUse()
+--- WatcherWatcher:micsInUse()
 --- Method
 --- Return a list of microphones that are in use.
 --- Parameters:
@@ -329,7 +329,7 @@ function WW:micsInUse()
     function(a) return a:inUse() end)
 end
 
---- WW:setMenuBarIcon()
+--- WatcherWatcher:setMenuBarIcon()
 --- Method
 --- Set the menubar icon depending on if any camera or microphone is in use.
 --- Parameters:
@@ -358,7 +358,7 @@ function WW:setMenuBarIcon()
   end
 end
 
---- WW:menubarCallback()
+--- WatcherWatcher:menubarCallback()
 --- Method
 --- Callback for when user clicks on the menubar item.
 --- Parameters:
@@ -389,7 +389,7 @@ function WW:menubarCallback(modifiers)
   return t
 end
 
---- WW:updateIcon()
+--- WatcherWatcher:updateIcon()
 --- Method
 --- Update icon (red circle) on desktop based on current state of camera
 --- and micophone usage.
@@ -426,7 +426,7 @@ function WW:updateIcon()
   end
 end
 
---- WW:iconBlink()
+--- WatcherWatcher:iconBlink()
 --- Method
 --- Toggle the icon.
 --- Parameters:
@@ -442,7 +442,7 @@ function WW:iconBlink()
   end
 end
 
---- WW:cameraWatcherCallback()
+--- WatcherWatcher:cameraWatcherCallback()
 --- Method
 --- Callback for hs.camera.setWatcherCallback()
 --- Parameters:
@@ -464,7 +464,7 @@ function WW:cameraWatcherCallbackwatcherCallback(camera, change)
   end
 end
 
---- WW:cameraPropertyCallback()
+--- WatcherWatcher:cameraPropertyCallback()
 --- Method
 --- Callback for hs.camera.setPropertyWatcherCallback()
 --- Parameters:
@@ -503,7 +503,7 @@ function WW:cameraPropertyCallback(camera, prop, scope, eventnum)
   end
 end
 
---- WW:audiodeviceWatcherCallback()
+--- WatcherWatcher:audiodeviceWatcherCallback()
 --- Method
 --- Callback for hs.camera.watcher
 --- Parameters:
@@ -519,7 +519,7 @@ function WW:audiodeviceWatcherCallback(event)
   end
 end
 
---- WW:setupAudiodeviceCallbacks()
+--- WatcherWatcher:setupAudiodeviceCallbacks()
 --- Method
 --- Make sure we have callbacks set up for all input audiodevices.
 --- Parameters:
@@ -541,7 +541,7 @@ function WW:setupAudiodeviceCallbacks()
   self.log.df("Running: %s (%s) %s", d, d:uid(), d:watcherIsRunning())  -- DEBUG
 end
 
---- WW:audiodeviceCallback()
+--- WatcherWatcher:audiodeviceCallback()
 --- Method
 --- Callback for audiodevice:watcherCallback()
 --- XXX This is not getting called.
