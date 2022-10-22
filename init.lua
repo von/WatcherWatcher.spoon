@@ -301,6 +301,34 @@ function WW:bindHotKeys(mapping)
   return self
 end
 
+--- WW:camerasInUse()
+--- Method
+--- Return a list of cameras that are in use.
+--- Parameters:
+---   * None
+---
+--- Returns:
+---   * List of cameras that are in use.
+function WW:camerasInUse()
+  return hs.fnutils.filter(
+    hs.camera.allCameras(),
+    function(c) return c:isInUse() end)
+end
+
+--- WW:micsInUse()
+--- Method
+--- Return a list of microphones that are in use.
+--- Parameters:
+---   * None
+---
+--- Returns:
+---   * List of microphones that are in use.
+function WW:micsInUse()
+  return hs.fnutils.filter(
+    hs.audiodevice.allInputDevices(),
+    function(a) return a:inUse() end)
+end
+
 --- WW:setMenuBarIcon()
 --- Method
 --- Set the menubar icon depending on if any camera or microphone is in use.
