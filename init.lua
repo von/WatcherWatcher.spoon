@@ -480,6 +480,24 @@ function WW:cameraWatcherCallbackwatcherCallback(camera, change)
   end
 end
 
+--- WatcherWatcher:muteIcon()
+--- Method
+--- Turn off the icon until some change causes it to turn back on.
+--- Parameters:
+---   * None
+---
+--- Returns:
+---   * Nothing
+function WW:muteIcon()
+  self.log.d("Muting icon")
+  if self.iconBlink then
+    self.iconTimer:stop()
+    self.icon:hide()
+  else
+    self.icon:delete()
+  end
+end
+
 --- WatcherWatcher:cameraPropertyCallback()
 --- Method
 --- Callback for hs.camera.setPropertyWatcherCallback()
