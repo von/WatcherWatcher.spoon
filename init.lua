@@ -14,7 +14,7 @@ WW.version="0.1"
 WW.author="Von Welch"
 -- https://opensource.org/licenses/Apache-2.0
 WW.license="Apache-2.0"
-WW.homepage=""
+WW.homepage="https://github.com/von/WatcherWatcher.spoon"
 
 -- Constants
 WW.GREEN_DOT = "🟢"
