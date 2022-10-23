@@ -293,12 +293,12 @@ end
 
 --- WatcherWatcher:bindHotKeys(table)
 --- Method
---- The method accepts a single parameter, which is a table. The keys of the table
---- are strings that describe the action performed, and the values of the table are
---- tables containing modifiers and keynames/keycodes. E.g.
+--- The method accepts a single parameter, which is a table. The keys of the
+--- table are strings that describe the action performed, and the values of
+--- the table are tables containing modifiers and keynames/keycodes. E.g.
 ---   {
----     f1 = {{"cmd", "alt"}, "f"},
----     f2 = {{"cmd", "alt"}, "g"}
+---     muteIcon = {{"cmd", "alt"}, "m"},
+---     reset = {{"cmd", "alt"}, "r"}
 ---    }
 ---
 ---
@@ -306,12 +306,12 @@ end
 ---  * mapping - Table of action to key mappings
 ---
 --- Returns:
----  * WW object
+---  * WatcherWatcher object
 
 function WW:bindHotKeys(mapping)
   local spec = {
-    f1 = hs.fnutils.partial(self.feature1, self),
-    f2 = hs.fnutils.partial(self.feature2, self)
+    muteIcon = hs.fnutils.partial(self.muteIcon, self),
+    reset = hs.fnutils.partial(self.reset, self)
   }
   hs.spoons.bindHotkeysToSpec(spec, mapping)
   return self
