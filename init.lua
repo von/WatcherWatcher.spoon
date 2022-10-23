@@ -222,6 +222,8 @@ function WW:start()
     end
   end
 
+  self:reset()
+
   return self
 end
 
@@ -271,9 +273,23 @@ function WW:stop()
   return self
 end
 
--- bindHotKeys()
--- If your Spoon provides actions that a user can map to hotkeys, you
--- should expose a :bindHotKeys() method.
+--- WatcherWatcher:reset()
+--- Method
+--- Reset all state based on current camera and microphone status.
+--- Ends effects of any prior muteIcon() call.
+--- Parameters:
+---   * None
+---
+--- Returns:
+---   * Nothing
+function WW:reset()
+  if self.enableMenubar then
+    self:setMenuBarIcon()
+  end
+  if self.enableIcon then
+    self:updateIcon()
+  end
+end
 
 --- WatcherWatcher:bindHotKeys(table)
 --- Method
