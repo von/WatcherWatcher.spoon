@@ -31,13 +31,13 @@
         "desc" : "If true (default), monitor cameras."
       },
       {
-        "doc" : "If true (default), monitor microphones.\nCurrently off due to bug in audiodevice callbacks:\nhttps:\/\/github.com\/Hammerspoon\/hammerspoon\/issues\/3057",
+        "doc" : "If true (not the default), monitor microphones.\nCurrently off due to bug in audiodevice callbacks:\nhttps:\/\/github.com\/Hammerspoon\/hammerspoon\/issues\/3057",
         "parameters" : [
 
         ],
         "name" : "monitorMics",
         "stripped_doc" : [
-          "If true (default), monitor microphones.",
+          "If true (not the default), monitor microphones.",
           "Currently off due to bug in audiodevice callbacks:",
           "https:\/\/github.com\/Hammerspoon\/hammerspoon\/issues\/3057"
         ],
@@ -50,7 +50,7 @@
 
         ],
         "def" : "WatcherWatcher.monitorMics",
-        "desc" : "If true (default), monitor microphones."
+        "desc" : "If true (not the default), monitor microphones."
       },
       {
         "doc" : "If true (default), enable menubar.",
@@ -238,11 +238,11 @@
 
     ],
     "type" : "Module",
-    "desc" : "UNKNOWN DESC",
+    "desc" : "Inspired by:",
     "Constructor" : [
 
     ],
-    "doc" : "",
+    "doc" : "Who watches the watchers? Monitor cameras and microphones for usage.\nInspired by:\n  OverSight (https:\/\/objective-see.org\/products\/oversight.html)\n  https:\/\/developer.okta.com\/blog\/2020\/10\/22\/set-up-a-mute-indicator-light-for-zoom-with-hammerspoon\n  http:\/\/www.hammerspoon.org\/Spoons\/MicMute.html",
     "Field" : [
 
     ],
@@ -813,13 +813,13 @@
         "desc" : "If true (default), monitor cameras."
       },
       {
-        "doc" : "If true (default), monitor microphones.\nCurrently off due to bug in audiodevice callbacks:\nhttps:\/\/github.com\/Hammerspoon\/hammerspoon\/issues\/3057",
+        "doc" : "If true (not the default), monitor microphones.\nCurrently off due to bug in audiodevice callbacks:\nhttps:\/\/github.com\/Hammerspoon\/hammerspoon\/issues\/3057",
         "parameters" : [
 
         ],
         "name" : "monitorMics",
         "stripped_doc" : [
-          "If true (default), monitor microphones.",
+          "If true (not the default), monitor microphones.",
           "Currently off due to bug in audiodevice callbacks:",
           "https:\/\/github.com\/Hammerspoon\/hammerspoon\/issues\/3057"
         ],
@@ -832,7 +832,7 @@
 
         ],
         "def" : "WatcherWatcher.monitorMics",
-        "desc" : "If true (default), monitor microphones."
+        "desc" : "If true (not the default), monitor microphones."
       },
       {
         "doc" : "Callback for audiodevice:watcherCallback()\nXXX This is not getting called.\n    See https:\/\/github.com\/Hammerspoon\/hammerspoon\/issues\/3057\nParameters:\n  * uid (string)\n  * eventname (string)\n  * scope (string)\n  * element (int)\n\nReturns:\n  * Nothing",

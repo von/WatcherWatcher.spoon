@@ -1,9 +1,9 @@
 --- === WatcherWatcher ===
--- Who watches the watchers? Monitor cameras and microphones for usage.
--- Inspired by OverSight (https://objective-see.org/products/oversight.html)
--- With kudos to:
---   https://developer.okta.com/blog/2020/10/22/set-up-a-mute-indicator-light-for-zoom-with-hammerspoon
---   http://www.hammerspoon.org/Spoons/MicMute.html
+--- Who watches the watchers? Monitor cameras and microphones for usage.
+--- Inspired by:
+---   OverSight (https://objective-see.org/products/oversight.html)
+---   https://developer.okta.com/blog/2020/10/22/set-up-a-mute-indicator-light-for-zoom-with-hammerspoon
+---   http://www.hammerspoon.org/Spoons/MicMute.html
 
 local WW = {}
 
