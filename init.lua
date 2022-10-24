@@ -25,6 +25,13 @@ WW.RED_DOT = "🔴"
 --- If true (default), monitor cameras.
 WW.monitorCameras = true
 
+--- WatcherWatcher.delayInUseCallbacks
+--- Variable
+--- If non-zero, delay in use callbacks by given number of seconds (default 5)
+--- to ignore spurious callbacks when laptop sleeps/wakes.
+--- See: https://github.com/von/WatcherWatcher.spoon/issues/2
+WW.delayInUseCallbacks = 5
+
 --- WatcherWatcher.monitorMics
 --- Variable
 --- If true (not the default), monitor microphones.
@@ -514,6 +521,14 @@ function WW:cameraPropertyCallback(camera, prop, scope, eventnum)
     camera:name(), prop, scope, eventnum, tostring(camera:isInUse()))
   if prop == "gone" then
     if camera:isInUse() then
+      if self.delayInUseCallbacks then
+        self.log.df("Delaying callback from %s for %f seconds.",
+          camera:name(), self.delayInUseCallbacks)
+        hs.timer.doAfter(self.delayInUseCallbacks,
+          hs.fnutils.partial(self.cameraInUseDelayedCallback,
+            self, camera, prop, scope, eventnum))
+        return
+      end
       if self.callbacks.cameraInUse then
         local ok, err = pcall(function() hs.callbacks.cameraInUse(dev) end)
         if not ok then
@@ -534,6 +549,43 @@ function WW:cameraPropertyCallback(camera, prop, scope, eventnum)
   end
   if self.enableIcon then
     self:updateIcon()
+  end
+end
+
+-- WatcherWatcher:cameraInUseDelayedCallback()
+-- I seem to get spurious camera in use callbacks when my laptop wakes or
+-- sleeps that are followed by a camera not in use callback 4 seconds later.
+-- This method is called by the callack when it receives an in use indiciation
+-- after 5 seconds and only takes action if the camera is still in use to
+-- ignore these spurious callbacks.
+-- See: https://github.com/von/WatcherWatcher.spoon/issues/2
+--
+-- Parameters:
+--   * hs.camera instance
+--   * property (expected to be "gone")
+--   * scope (expected to be "glob")
+--   * event number (ignored, expected to be 0)
+--
+-- Returns:
+--   * Nothing
+function WW:cameraInUseDelayedCallback(camera, prop, scope, eventnum)
+  self.log.df("cameraInUseDelayedCallback(%s, %s, %s, %d, %s)",
+    camera:name(), prop, scope, eventnum, tostring(camera:isInUse()))
+  if camera:isInUse() then
+    if self.callbacks.cameraInUse then
+      local ok, err = pcall(function() hs.callbacks.cameraInUse(dev) end)
+      if not ok then
+        self.log.ef("Error calling cameraInUse callback: %s", err)
+      end
+    end
+    if self.enableMenubar then
+      self:setMenuBarIcon()
+    end
+    if self.enableIcon then
+      self:updateIcon()
+    end
+  else
+    self.log.d("Camera not in use. Ignoring.")
   end
 end
 
