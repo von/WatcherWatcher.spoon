@@ -546,9 +546,9 @@ function WW:cameraPropertyCallback(camera, prop, scope, eventnum)
     if self.enableMenubar then
       self:setMenuBarIcon()
     end
-  end
-  if self.enableIcon then
-    self:updateIcon()
+    if self.enableIcon then
+      self:updateIcon()
+    end
   end
 end
 
