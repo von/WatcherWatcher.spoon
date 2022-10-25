@@ -34,10 +34,16 @@ WW.delayInUseCallbacks = 5
 
 --- WatcherWatcher.monitorMics
 --- Variable
---- If true (not the default), monitor microphones.
---- Currently off due to bug in audiodevice callbacks:
---- https://github.com/Hammerspoon/hammerspoon/issues/3057
-WW.monitorMics = false
+--- If true (the default), monitor microphones.
+WW.monitorMics = true
+
+--- WatcherWatcher.audiodeviceTimerInterval
+--- Variable
+--- A workaround for audiodevice callbacks not working. If non-zero,
+--- run a timer which checks audiodevices every given number of seconds.
+--- Default is 5 seconds.
+--- See https://github.com/Hammerspoon/hammerspoon/issues/3057
+WW.audiodeviceTimerInterval = 5
 
 --- WatcherWatcher.enableMenubar
 --- Variable
@@ -188,6 +194,16 @@ function WW:start()
     hs.audiodevice.watcher.start()
 
     self:setupAudiodeviceCallbacks()
+
+    if self.audiodeviceTimerInterval then
+      self.audiodevicestate = {}
+      self.log.df(
+        "Starting audiodevice timer (interval: %d)",
+        self.audiodeviceTimerInterval)
+      self.audiodeviceTimer = hs.timer.doEvery(
+        self.audiodeviceTimerInterval,
+        hs.fnutils.partial(self.audioDeviceTimerFunction, self))
+    end
   end
 
   if self.enableMenubar then
@@ -266,6 +282,9 @@ function WW:stop()
         m:watcherCallback(nil)
         m:watcherStop()
       end)
+    if audiodeviceTimerInterval then
+      self.audiodeviceTimer:stop()
+    end
   end
 
   if self.enableMenubar then
@@ -650,23 +669,87 @@ function WW:audiodeviceCallback(uid, eventname, scope, element)
       return
     end
     if dev:inUse() then
-      hs.log.df("Microphone %s now in use", dev:name())
-      if self.callbacks.micInUse then
-        local ok, err = pcall(function() hs.callbacks.micInUse(dev) end)
-        if not ok then
-          self.log.ef("Error calling micInUse callback: %s", err)
-        end
-      end
+      self.micInUse(dev)
     else
-      hs.log.df("Microphone %s now not in use", dev:name())
-      if self.callbacks.micNotInUse then
-        local ok, err = pcall(function() hs.callbacks.micNotInUse(dev) end)
-        if not ok then
-          self.log.ef("Error calling micNotInUse callback: %s", err)
-        end
-      end
+      self.micNotInUse(dev)
     end
   end
+end
+
+-- WatcherWatcher:micInUse()
+-- Handle transition of a microphone to being in use.
+-- Parameters:
+--   * hs.audiodevice instance
+--
+-- Returns:
+--   * Nothing
+function WW:micInUse(device)
+  self.log.df("Microphone %s now in use", device:name())
+  if self.enableMenubar then
+    self:setMenuBarIcon()
+  end
+  if self.enableIcon then
+    self:updateIcon()
+  end
+  if self.callbacks.micInUse then
+    local ok, err = pcall(function() hs.callbacks.micInUse(device) end)
+    if not ok then
+      self.log.ef("Error calling micInUse callback: %s", err)
+    end
+  end
+end
+
+-- WatcherWatcher:micNotInUse()
+-- Handle transition of a microphone to being not in use.
+-- Parameters:
+--   * hs.audiodevice instance
+--
+-- Returns:
+--   * Nothing
+function WW:micNotInUse(device)
+  self.log.df("Microphone %s now in use", device:name())
+  if self.enableMenubar then
+    self:setMenuBarIcon()
+  end
+  if self.enableIcon then
+    self:updateIcon()
+  end
+  if self.callbacks.micNotInUse then
+    local ok, err = pcall(function() hs.callbacks.micInUse(device) end)
+    if not ok then
+      self.log.ef("Error calling micInUse callback: %s", err)
+    end
+  end
+end
+
+-- WatcherWatcher:checkAudiodeviceForChange()
+-- Check status of audiodevice against what is in self.audiodevicestate
+-- (tabled keyed by uids, with false == not in use, true == in use)
+-- and invoke state changes as approproate.
+-- Parameters:
+--   * hs.audiodevice instance
+--
+-- Returns:
+--   * Nothing
+function WW:checkAudiodeviceForChange(device)
+  local oldstate = self.audiodevicestate[device:uid()] or false
+  local state = device:inUse()
+  if state ~= oldstate then
+    self.audiodevicestate[device:uid()] = state
+    if state then
+      self:micInUse(device)
+    else
+      self:micNotInUse(device)
+    end
+  end
+end
+
+-- WatcherWatcher:audioDeviceTimerFunction()
+--
+function WW:audioDeviceTimerFunction()
+  hs.fnutils.ieach(
+    hs.audiodevice.allInputDevices(),
+    hs.fnutils.partial(self.checkAudiodeviceForChange, self))
 end
 
 return WW
