@@ -549,14 +549,14 @@ function WW:cameraPropertyCallback(camera, prop, scope, eventnum)
         return
       end
       if self.callbacks.cameraInUse then
-        local ok, err = pcall(function() hs.callbacks.cameraInUse(dev) end)
+        local ok, err = pcall(function() self.callbacks.cameraInUse(dev) end)
         if not ok then
           self.log.ef("Error calling cameraInUse callback: %s", err)
         end
       end
     else
       if self.callbacks.cameraNotInUse then
-        local ok, err = pcall(function() hs.callbacks.cameraNotInUse(dev) end)
+        local ok, err = pcall(function() self.callbacks.cameraNotInUse(dev) end)
         if not ok then
           self.log.ef("Error calling cameraNotInUse callback: %s", err)
         end
@@ -592,7 +592,7 @@ function WW:cameraInUseDelayedCallback(camera, prop, scope, eventnum)
     camera:name(), prop, scope, eventnum, tostring(camera:isInUse()))
   if camera:isInUse() then
     if self.callbacks.cameraInUse then
-      local ok, err = pcall(function() hs.callbacks.cameraInUse(dev) end)
+      local ok, err = pcall(function() self.callbacks.cameraInUse(dev) end)
       if not ok then
         self.log.ef("Error calling cameraInUse callback: %s", err)
       end
@@ -692,7 +692,7 @@ function WW:micInUse(device)
     self:updateIcon()
   end
   if self.callbacks.micInUse then
-    local ok, err = pcall(function() hs.callbacks.micInUse(device) end)
+    local ok, err = pcall(function() self.callbacks.micInUse(device) end)
     if not ok then
       self.log.ef("Error calling micInUse callback: %s", err)
     end
@@ -715,7 +715,7 @@ function WW:micNotInUse(device)
     self:updateIcon()
   end
   if self.callbacks.micNotInUse then
-    local ok, err = pcall(function() hs.callbacks.micInUse(device) end)
+    local ok, err = pcall(function() self.callbacks.micInUse(device) end)
     if not ok then
       self.log.ef("Error calling micInUse callback: %s", err)
     end
