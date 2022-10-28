@@ -16,10 +16,6 @@ WW.author="Von Welch"
 WW.license="Apache-2.0"
 WW.homepage="https://github.com/von/WatcherWatcher.spoon"
 
--- Constants
-WW.GREEN_DOT = "🟢"
-WW.RED_DOT = "🔴"
-
 --- WatcherWatcher.monitorCameras
 --- Variable
 --- If true (default), monitor cameras.
@@ -45,52 +41,6 @@ WW.monitorMics = true
 --- See https://github.com/Hammerspoon/hammerspoon/issues/3057
 WW.audiodeviceTimerInterval = 5
 
---- WatcherWatcher.enableMenubar
---- Variable
---- If true (default), enable menubar.
-WW.enableMenubar = true
-
---- WatcherWatcher.enableIcon
---- Variable
---- If true (default), enable desktop icon if a camera or mic is in use.
-WW.enableIcon = true
-
---- WatcherWatcher.iconGeometry
---- Variable
---- Table with geometry for icon. Should be a square.
---- Can have negative values for x and y, in which case they are treated
---- as offsets from right or bottom of screen respectively.
-WW.iconGeometry = { x = -60, y = 20, w = 50, h = 50 }
-
---- WatcherWatcher.iconFillColor
---- Variable
---- Table with fill color for icon.
-WW.iconFillColor = { alpha = 1.0, red = 1.0  }
-
---- WatcherWatcher.iconBlink
---- Variable
---- Enable blinking of Icon?
-WW.iconBlink = true
-
---- WatcherWatcher.iconBlinkInterval
---- Variable
---- Frequency of icon blinking in seconds
-WW.iconBlinkInterval = 1.0
-
---- WatcherWatcher.menubarTitle
---- Variable
---- A table with the following keys:
----   * cameraInUse: Menubar title if a camera is in use.
----   * micInUse: Menubar title if a microphone is in use.
----   * cameraAndMicInUse: Menubar title if a camera and a microphone are in use.
----   * nothingInUse: Menubar title if nothing is in use.
-WW.menubarTitle = {
-  cameraInUse =  "📷",
-  micInUse =  "🎙",
-  cameraAndMicInUse = "📷🎙",
-  nothingInUse = WW.GREEN_DOT
-}
-
 --- WatcherWatcher.callbacks
 --- Variable
 --- A table with the following keys:
@@ -106,6 +56,10 @@ WW.menubarTitle = {
 ---   * micNotInUse: callback for when a microphone becomes not in use.
 ---     This function should take a single parameter of a hs.audiodevice instance
 ---     and return nothing.
+---
+--- WatcherWatcher comes with two callbacks that can be used:
+---   * WatcherWatcher.Flasher, a blinking icon that can appear on the screen.
+---   * WatcherWatcher.Menubar, a menubar item
 WW.callbacks = {
   cameraInUse = nil,
   cameraNotInUse = nil,
@@ -153,6 +107,12 @@ function WW:init()
   -- Path to this file itself
   -- See also http://www.hammerspoon.org/docs/hs.spoons.html#resourcePath
   self.path = hs.spoons.scriptPath()
+
+  self.Flasher = dofile(hs.spoons.resourcePath("Flasher.lua"))
+  self.Flasher:init()
+
+  self.Menubar = dofile(hs.spoons.resourcePath("Menubar.lua"))
+  self.Menubar:init()
 
   return self
 end
@@ -206,47 +166,6 @@ function WW:start()
     end
   end
 
-  if self.enableMenubar then
-    self.menubar = hs.menubar.new()
-    self.menubar:setMenu(hs.fnutils.partial(self.menubarCallback, self))
-    self:setMenuBarIcon()
-  end
-
-  if self.enableIcon then
-    self.log.d("Creating icon")
-    -- XXX I suspect this doesn't handle multiple screens correctly
-    local geometry = self.iconGeometry
-    -- Handle negative x or y as offsets from right or bottom
-    -- XXX Primary or main screen?
-    local screenFrame = hs.screen.primaryScreen():frame()
-    if geometry.x < 0 then
-      geometry.x = screenFrame.w + geometry.x
-    end
-    if geometry.y < 0 then
-      geometry.y = screenFrame.h + geometry.y
-    end
-    self.icon = hs.canvas.new(geometry)
-    if not self.icon then
-      self.e("Failed to create icon")
-      self.enableIcon = false
-    else
-      self.icon:appendElements({
-          -- A circle basically filling the canvas
-          type = "circle",
-          center = { x = ".5", y = ".5" },
-          radius = ".5",
-          fillColor = self.iconFillColor,
-          action = "fill"
-        })
-
-      self.iconTimer = hs.timer.new(
-        self.iconBlinkInterval,
-        hs.fnutils.partial(self.iconBlink, self))
-    end
-  end
-
-  self:reset()
-
   return self
 end
 
@@ -287,36 +206,10 @@ function WW:stop()
     end
   end
 
-  if self.enableMenubar then
-    self.menubar:removeFromMenuBar()
-  end
-
-  if self.enableIcon then
-    self.iconTimer:stop()
-    self.icon:hide()
-  end
-
   return self
 end
 
---- WatcherWatcher:reset()
---- Method
---- Reset all state based on current camera and microphone status.
---- Ends effects of any prior muteIcon() call.
---- Parameters:
----   * None
----
---- Returns:
----   * Nothing
-function WW:reset()
-  if self.enableMenubar then
-    self:setMenuBarIcon()
-  end
-  if self.enableIcon then
-    self:updateIcon()
-  end
-end
-
+-- XXX Revisit
 --- WatcherWatcher:bindHotKeys(table)
 --- Method
 --- The method accepts a single parameter, which is a table. The keys of the
@@ -371,119 +264,6 @@ function WW:micsInUse()
     function(a) return a:inUse() end)
 end
 
---- WatcherWatcher:setMenuBarIcon()
---- Method
---- Set the menubar icon depending on if any camera or microphone is in use.
---- Parameters:
----   * None
----
---- Returns:
----   * Nothing
-
-function WW:setMenuBarIcon()
-  self.log.d("Setting menubar icon")
-  local cameraInUse = self.monitorCameras and not hs.fnutils.every(
-      hs.camera.allCameras(),
-      function(c) return not c:isInUse() end)
-  local micInUse = self.monitorMics and not hs.fnutils.every(
-      hs.audiodevice.allInputDevices(),
-      function(m) return not m:inUse() end)
-
-  if cameraInUse and micInUse then
-    self.menubar:setTitle(self.menubarTitle.cameraAndMicInUse)
-  elseif cameraInUse then
-    self.menubar:setTitle(self.menubarTitle.cameraInUse)
-  elseif micInUse then
-    self.menubar:setTitle(self.menubarTitle.micInUse)
-  else
-    self.menubar:setTitle(self.menubarTitle.nothingInUse)
-  end
-end
-
---- WatcherWatcher:menubarCallback()
---- Method
---- Callback for when user clicks on the menubar item.
---- Parameters:
----   * table indicating which keyboard modifiers were held down
----
---- Returns:
----   * table with menu - see hs.menubar.setMenu()
-function WW:menubarCallback(modifiers)
-  local t = {}
-  hs.fnutils.each(hs.camera.allCameras(),
-    function(c)
-      local name = c:name()
-      if c:isInUse() then
-        name = WW.RED_DOT .. name
-      end
-      -- Not clear what selecting a camera should/could do.
-      table.insert(t, { title = name })
-    end)
-  table.insert(t, { title = "-" })
-  hs.fnutils.each(hs.audiodevice.allInputDevices(),
-    function(m)
-      local name = m:name()
-      if m:inUse() then
-        name = WW.RED_DOT .. name
-      end
-      table.insert(t, { title = name })
-    end)
-  return t
-end
-
---- WatcherWatcher:updateIcon()
---- Method
---- Update icon (red circle) on desktop based on current state of camera
---- and micophone usage.
---- Parameters:
----   * Nothing
----
---- Returns:
----   * Nothing
-function WW:updateIcon()
-  local cameraInUse = self.monitorCameras and not hs.fnutils.every(
-      hs.camera.allCameras(),
-      function(c) return not c:isInUse() end)
-  local micInUse = self.monitorMics and not hs.fnutils.every(
-      hs.audiodevice.allInputDevices(),
-      function(m) return not m:inUse() end)
-
-  if cameraInUse or micInUse then
-    if self.iconBlink then
-      self.log.d("Starting icon blinking")
-      self.iconTimer:start()
-    else
-      self.log.d("Showing icon")
-      self.icon:show()
-    end
-  else
-    if self.iconBlink then
-      self.log.d("Stopping icon blinking")
-      self.iconTimer:stop()
-      self.icon:hide()
-    else
-      self.log.d("Hiding icon")
-      self.icon:delete()
-    end
-  end
-end
-
---- WatcherWatcher:iconBlink()
---- Method
---- Toggle the icon.
---- Parameters:
----   * None
----
---- Returns:
----   * Nothing
-function WW:iconBlink()
-  if self.icon:isShowing() then
-    self.icon:hide()
-  else
-    self.icon:show()
-  end
-end
-
 --- WatcherWatcher:cameraWatcherCallback()
 --- Method
 --- Callback for hs.camera.setWatcherCallback()
@@ -503,24 +283,6 @@ function WW:cameraWatcherCallbackwatcherCallback(camera, change)
     self.log.d("Camera removed")
   else
     self.log.d("Unknowm watcher change: " .. change)
-  end
-end
-
---- WatcherWatcher:muteIcon()
---- Method
---- Turn off the icon until some change causes it to turn back on.
---- Parameters:
----   * None
----
---- Returns:
----   * Nothing
-function WW:muteIcon()
-  self.log.d("Muting icon")
-  if self.iconBlink then
-    self.iconTimer:stop()
-    self.icon:hide()
-  else
-    self.icon:delete()
   end
 end
 
@@ -562,12 +324,6 @@ function WW:cameraPropertyCallback(camera, prop, scope, eventnum)
         end
       end
     end
-    if self.enableMenubar then
-      self:setMenuBarIcon()
-    end
-    if self.enableIcon then
-      self:updateIcon()
-    end
   end
 end
 
@@ -596,12 +352,6 @@ function WW:cameraInUseDelayedCallback(camera, prop, scope, eventnum)
       if not ok then
         self.log.ef("Error calling cameraInUse callback: %s", err)
       end
-    end
-    if self.enableMenubar then
-      self:setMenuBarIcon()
-    end
-    if self.enableIcon then
-      self:updateIcon()
     end
   else
     self.log.d("Camera not in use. Ignoring.")
@@ -685,12 +435,6 @@ end
 --   * Nothing
 function WW:micInUse(device)
   self.log.df("Microphone %s now in use", device:name())
-  if self.enableMenubar then
-    self:setMenuBarIcon()
-  end
-  if self.enableIcon then
-    self:updateIcon()
-  end
   if self.callbacks.micInUse then
     local ok, err = pcall(function() self.callbacks.micInUse(device) end)
     if not ok then
@@ -708,12 +452,6 @@ end
 --   * Nothing
 function WW:micNotInUse(device)
   self.log.df("Microphone %s now in use", device:name())
-  if self.enableMenubar then
-    self:setMenuBarIcon()
-  end
-  if self.enableIcon then
-    self:updateIcon()
-  end
   if self.callbacks.micNotInUse then
     local ok, err = pcall(function() self.callbacks.micInUse(device) end)
     if not ok then
