@@ -4,22 +4,22 @@
 
 local Flasher = {}
 
---- Flasher.iconGeometry
+--- Flasher.geometry
 --- Variable
 --- Table with geometry for icon. Should be a square.
 --- Can have negative values for x and y, in which case they are treated
 --- as offsets from right or bottom of screen respectively.
-Flasher.iconGeometry = { x = -60, y = 20, w = 50, h = 50 }
+Flasher.geometry = { x = -60, y = 20, w = 50, h = 50 }
 
---- Flasher.iconFillColor
+--- Flasher.fillColor
 --- Variable
 --- Table with fill color for icon.
-Flasher.iconFillColor = { alpha = 1.0, red = 1.0  }
+Flasher.fillColor = { alpha = 1.0, red = 1.0  }
 
---- Flasher.iconBlinkInterval
+--- Flasher.blinkInterval
 --- Variable
 --- Frequency of icon blinking in seconds. If zero, disables blinking.
-Flasher.iconBlinkInterval = 1.0
+Flasher.blinkInterval = 1.0
 
 --- Flasher:init()
 --- Method
@@ -82,7 +82,7 @@ end
 --   * hs.canvas instance
 function Flasher:createIcon()
   -- XXX I suspect this doesn't handle multiple screens correctly
-  local geometry = self.iconGeometry
+  local geometry = self.geometry
   -- Handle negative x or y as offsets from right or bottom
   -- XXX Primary or main screen?
   local screenFrame = hs.screen.primaryScreen():frame()
@@ -102,7 +102,7 @@ function Flasher:createIcon()
       type = "circle",
       center = { x = ".5", y = ".5" },
       radius = ".5",
-      fillColor = self.iconFillColor,
+      fillColor = self.fillColor,
       action = "fill"
     })
 
@@ -124,10 +124,10 @@ end
 function Flasher:callbacks()
   self.icon = self:createIcon()
 
-  if self.iconBlinkInterval > 0 then
-    self.iconTimer = hs.timer.new(
-      self.iconBlinkInterval,
-      hs.fnutils.partial(self.iconBlink, self))
+  if self.blinkInterval > 0 then
+    self.blinkTimer = hs.timer.new(
+      self.blinkInterval,
+      hs.fnutils.partial(self.blink, self))
   end
 
   local start = hs.fnutils.partial(self.show, self)
@@ -145,16 +145,16 @@ end
 --- Returns:
 ---   * Nothing
 function Flasher:show()
-  if self.iconBlinkInterval > 0 then
+  if self.blinkInterval > 0 then
     self.log.d("Starting icon blinking")
-    self.iconTimer:start()
+    self.blinkTimer:start()
   else
     self.log.d("Showing icon")
     self.icon:show()
   end
 end
 
---- Flasher:iconBlink()
+--- Flasher:blink()
 --- Method
 --- Toggle the icon.
 --- Parameters:
@@ -162,7 +162,7 @@ end
 ---
 --- Returns:
 ---   * Nothing
-function Flasher:iconBlink()
+function Flasher:blink()
   if self.icon:isShowing() then
     self.icon:hide()
   else
@@ -179,9 +179,9 @@ end
 --- Returns:
 ---   * Nothing
 function Flasher:hide()
-  if self.iconBlinkInterval > 0 then
+  if self.blinkInterval > 0 then
     self.log.d("Stopping icon blinking")
-    self.iconTimer:stop()
+    self.blinkTimer:stop()
     self.icon:hide()
   else
     self.log.d("Hiding icon")
