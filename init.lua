@@ -4,6 +4,11 @@
 ---   OverSight (https://objective-see.org/products/oversight.html)
 ---   https://developer.okta.com/blog/2020/10/22/set-up-a-mute-indicator-light-for-zoom-with-hammerspoon
 ---   http://www.hammerspoon.org/Spoons/MicMute.html
+---
+--- Behavior is configurable with WatcherWatcher.callbacks, default
+--- is to provide camera and microphone status via a menubar icon
+--- and via blinking circles in the upper righthand corner of the
+--- screen.
 
 local WW = {}
 
@@ -166,7 +171,53 @@ function WW:start()
     end
   end
 
+  self:setupDefaultCallbacks()
+
   return self
+end
+
+-- WatcherWatcher:setupDefaultCallbacks()
+-- Method
+-- Set up default callbacks if callbacks are unset.
+-- Parameters:
+--   * None
+--
+-- Returns:
+--   * Nothing
+function WW:setupDefaultCallbacks()
+  -- If there is any sign of callbacks having been set up, then
+  -- we don't touch them.
+  if self.callbacks.cameraInUse or self.callbacks.cameraNotInUse or
+    self.callbacks.micInUse or self.callbacks.micNotInUse then
+    return
+  end
+
+  self.log.d("Setting up default callbacks")
+
+  -- We do a default big red flashing circle in the upper right corner
+  -- for a camera in use.
+  self.cameraFlasher = self.Flasher:new()
+  local cameraFlasherStart, cameraFlasherStop = self.cameraFlasher:callbacks()
+
+  -- For a microphone in use, we create a smaller orange flashing circle
+  -- in the upper right.
+  self.microphoneFlasher = self.Flasher:new()
+  self.microphoneFlasher.geometry = { x = -30, y = 20, w = 20, h = 20 }
+  self.microphoneFlasher.fillColor =
+    { alpha = 1.0, red = 1.0, green = 0.67 }
+  local micFlasherStart, micFlasherStop = self.microphoneFlasher:callbacks()
+
+  self.menubar = WW.Menubar
+  local mbStart, mbStop = self.menubar:callbacks()
+
+  self.callbacks.cameraInUse =
+    function(dev) cameraFlasherStart(dev) mbStart(dev) end
+  self.callbacks.cameraNotInUse =
+    function(dev) cameraFlasherStop(dev) mbStop(dev) end
+  self.callbacks.micInUse =
+    function(dev) micFlasherStart(dev) mbStart(dev) end
+  self.callbacks.micNotInUse =
+    function(dev) micFlasherStop(dev) mbStop(dev) end
 end
 
 --- WatcherWatcher:stop()
@@ -209,15 +260,13 @@ function WW:stop()
   return self
 end
 
--- XXX Revisit
 --- WatcherWatcher:bindHotKeys(table)
 --- Method
 --- The method accepts a single parameter, which is a table. The keys of the
 --- table are strings that describe the action performed, and the values of
 --- the table are tables containing modifiers and keynames/keycodes. E.g.
 ---   {
----     muteIcon = {{"cmd", "alt"}, "m"},
----     reset = {{"cmd", "alt"}, "r"}
+---     stop = {{"cmd", "alt"}, "s"}
 ---    }
 ---
 ---
@@ -229,8 +278,7 @@ end
 
 function WW:bindHotKeys(mapping)
   local spec = {
-    muteIcon = hs.fnutils.partial(self.muteIcon, self),
-    reset = hs.fnutils.partial(self.reset, self)
+    stop = hs.fnutils.partial(self.stop, self)
   }
   hs.spoons.bindHotkeysToSpec(spec, mapping)
   return self
