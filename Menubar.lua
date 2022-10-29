@@ -5,8 +5,11 @@
 local MB = {}
 
 -- Constants
+-- Characters to potential use in the menubar title or menu itself
 MB.GREEN_DOT = "🟢"
 MB.RED_DOT = "🔴"
+MB.CAMERA = "📷"
+MB.MICROPHONE = "🎙"
 
 --- Menubar.title
 --- Variable
@@ -16,9 +19,9 @@ MB.RED_DOT = "🔴"
 ---   * cameraAndMicInUse: Menubar title if a camera and a microphone are in use.
 ---   * nothingInUse: Menubar title if nothing is in use.
 MB.title = {
-  cameraInUse =  "📷",
-  micInUse =  "🎙",
-  cameraAndMicInUse = "📷🎙",
+  cameraInUse =  MB.RED_DOT,
+  micInUse =  MB.RED_DOT,
+  cameraAndMicInUse = MB.RED_DOT,
   nothingInUse = MB.GREEN_DOT
 }
 
