@@ -434,7 +434,7 @@ end
 -- Returns:
 --   * Nothing
 function WW:micInUse(device)
-  self.log.df("Microphone %s now in use", device:name())
+  self.log.df("Microphone %s in use", device:name())
   if self.callbacks.micInUse then
     local ok, err = pcall(function() self.callbacks.micInUse(device) end)
     if not ok then
@@ -451,9 +451,9 @@ end
 -- Returns:
 --   * Nothing
 function WW:micNotInUse(device)
-  self.log.df("Microphone %s now in use", device:name())
+  self.log.df("Microphone %s not in use", device:name())
   if self.callbacks.micNotInUse then
-    local ok, err = pcall(function() self.callbacks.micInUse(device) end)
+    local ok, err = pcall(function() self.callbacks.micNotInUse(device) end)
     if not ok then
       self.log.ef("Error calling micInUse callback: %s", err)
     end
