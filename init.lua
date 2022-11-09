@@ -140,7 +140,8 @@ function WW:start()
   self.log.d("Starting")
 
   if self.monitorCameras then
-    local cameraWatcherCallback = hs.fnutils.partial(WW.cameraWatcherCallback, self)
+    local cameraWatcherCallback =
+      hs.fnutils.partial(WW.cameraWatcherCallback, self)
     hs.camera.setWatcherCallback(cameraWatcherCallback)
     hs.camera.startWatcher()
 
@@ -324,7 +325,8 @@ end
 function WW:cameraWatcherCallbackwatcherCallback(camera, change)
   if change == "Added" then
     self.log.d("Starting watcher on new camera " .. camera:name())
-    local propertyCallback = hs.fnutils.partial(WW.cameraPropertyCallback, self)
+    local propertyCallback = 
+      hs.fnutils.partial(self.cameraPropertyCallback, self)
     camera:setPropertyWatcherCallback(propertyCallback)
     camera:startPropertyWatcher()
   elseif change == "Removed" then
