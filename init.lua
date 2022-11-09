@@ -322,7 +322,7 @@ end
 ---
 --- Returns:
 ---   * Nothing
-function WW:cameraWatcherCallbackwatcherCallback(camera, change)
+function WW:cameraWatcherCallback(camera, change)
   if change == "Added" then
     self.log.d("Starting watcher on new camera " .. camera:name())
     local propertyCallback = 
