@@ -467,9 +467,9 @@ function WW:audiodeviceCallback(uid, eventname, scope, element)
       return
     end
     if dev:inUse() then
-      self.micInUse(dev)
+      self:micInUse(dev)
     else
-      self.micNotInUse(dev)
+      self:micNotInUse(dev)
     end
   end
 end
