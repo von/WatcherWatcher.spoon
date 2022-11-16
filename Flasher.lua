@@ -60,14 +60,19 @@ end
 --- Return a new Flasher instance with a copy of all the module variables
 --- and which can be configured separately.
 --- Parameters:
----   * None
+---   * Name (optional): Name to use for logging
 ---
 --- Returns:
 ---   * New hs.WatcherWatcher.Flasher instance
-function Flasher:new()
+function Flasher:new(name)
   local f = {}
   for k,v in pairs(self) do
     f[k] = v
+  end
+  if name then
+    f.name = name
+    f.log = hs.logger.new("Flasher(" .. name ..")")
+    f.log.setLogLevel(self.log.getLogLevel())
   end
   return f
 end
