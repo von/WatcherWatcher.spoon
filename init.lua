@@ -325,7 +325,7 @@ end
 function WW:cameraWatcherCallback(camera, change)
   if change == "Added" then
     self.log.d("Starting watcher on new camera " .. camera:name())
-    local propertyCallback = 
+    local propertyCallback =
       hs.fnutils.partial(self.cameraPropertyCallback, self)
     camera:setPropertyWatcherCallback(propertyCallback)
     camera:startPropertyWatcher()
