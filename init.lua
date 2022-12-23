@@ -410,7 +410,7 @@ end
 
 --- WatcherWatcher:audiodeviceWatcherCallback()
 --- Method
---- Callback for hs.camera.watcher
+--- Callback for hs.audiodevice.watcher
 --- Parameters:
 ---   * String with change
 ---
@@ -512,7 +512,7 @@ end
 
 -- WatcherWatcher:checkAudiodeviceForChange()
 -- Check status of audiodevice against what is in self.audiodevicestate
--- (tabled keyed by uids, with false == not in use, true == in use)
+-- (table keyed by uids, with false == not in use, true == in use)
 -- and invoke state changes as approproate.
 -- Parameters:
 --   * hs.audiodevice instance
