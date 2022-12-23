@@ -1,9 +1,10 @@
 --- === WatcherWatcher ===
 --- Who watches the watchers? Monitor cameras and microphones for usage.
---- Inspired by:
+--- Inspired by and kudos to:
 ---   OverSight (https://objective-see.org/products/oversight.html)
 ---   https://developer.okta.com/blog/2020/10/22/set-up-a-mute-indicator-light-for-zoom-with-hammerspoon
 ---   http://www.hammerspoon.org/Spoons/MicMute.html
+---   https://github.com/jpf/Zoom.spoon
 ---
 --- Behavior is configurable with WatcherWatcher.callbacks, default
 --- is to provide camera and microphone status via a menubar icon
@@ -45,6 +46,14 @@ WW.monitorMics = true
 --- Default is 5 seconds.
 --- See https://github.com/Hammerspoon/hammerspoon/issues/3057
 WW.audiodeviceTimerInterval = 5
+
+--- WatcherWatcher.honorZoomMuteStatus
+--- Variable
+--- Zoom activiates the microphone and then implements its own mute, so
+--- will present a false positive. If honorZoomMuteStatus is true, then
+--- honor Zoom's microphone state over that of the system if it is running.
+--- Default is true.
+WW.honorZoomMuteStatus = true
 
 --- WatcherWatcher.callbacks
 --- Variable
@@ -553,6 +562,17 @@ end
 function WW:checkAudiodeviceForChange(device)
   local oldstate = self.audiodevicestate[device:uid()] or false
   local state = device:inUse()
+  if state and self.honorZoomMuteStatus then
+    local zoomApp = hs.application.get("zoom.us")
+    if zoomApp then
+      if zoomApp:findMenuItem({ "Meeting", "Unmute Audio" }) then
+        -- Zoom is running and has audio muted. Treat mic as muted.
+        -- This isn't perfect as we don't know for sure that Zoom
+        -- has the microphone open.
+        state = false
+      end
+    end
+  end
   if state ~= oldstate then
     self.audiodevicestate[device:uid()] = state
     if state then
