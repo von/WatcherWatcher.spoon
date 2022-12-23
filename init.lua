@@ -61,6 +61,8 @@ WW.audiodeviceTimerInterval = 5
 ---   * micNotInUse: callback for when a microphone becomes not in use.
 ---     This function should take a single parameter of a hs.audiodevice instance
 ---     and return nothing.
+---   * mute: callback from when user requests muting of indicators.
+---     This function should take no aguments and return nothing.
 ---
 --- WatcherWatcher comes with two callbacks that can be used:
 ---   * WatcherWatcher.Flasher, a blinking icon that can appear on the screen.
@@ -69,7 +71,8 @@ WW.callbacks = {
   cameraInUse = nil,
   cameraNotInUse = nil,
   micInUse = nil,
-  micNotInUse = nil
+  micNotInUse = nil,
+  mute = nil
 }
 
 --- WatcherWatcher:debug(enable)
@@ -189,7 +192,8 @@ function WW:setupDefaultCallbacks()
   -- If there is any sign of callbacks having been set up, then
   -- we don't touch them.
   if self.callbacks.cameraInUse or self.callbacks.cameraNotInUse or
-    self.callbacks.micInUse or self.callbacks.micNotInUse then
+    self.callbacks.micInUse or self.callbacks.micNotInUse or
+    self.callbacks.mute then
     return
   end
 
@@ -198,7 +202,8 @@ function WW:setupDefaultCallbacks()
   -- We do a default big red flashing circle in the upper right corner
   -- for a camera in use.
   self.cameraFlasher = self.Flasher:new("camera")
-  local cameraFlasherStart, cameraFlasherStop = self.cameraFlasher:callbacks()
+  local cameraFlasherStart, cameraFlasherStop, cameraFlasherMute =
+    self.cameraFlasher:callbacks()
 
   -- For a microphone in use, we create a smaller orange flashing circle
   -- in the upper right.
@@ -206,7 +211,8 @@ function WW:setupDefaultCallbacks()
   self.microphoneFlasher.geometry = { x = -30, y = 20, w = 20, h = 20 }
   self.microphoneFlasher.fillColor =
     { alpha = 1.0, red = 1.0, green = 0.67 }
-  local micFlasherStart, micFlasherStop = self.microphoneFlasher:callbacks()
+  local micFlasherStart, micFlasherStop, micFlasherMute =
+    self.microphoneFlasher:callbacks()
 
   self.menubar = WW.Menubar
   local mbStart, mbStop = self.menubar:callbacks()
@@ -219,6 +225,8 @@ function WW:setupDefaultCallbacks()
     function(dev) micFlasherStart(dev) mbStart(dev) end
   self.callbacks.micNotInUse =
     function(dev) micFlasherStop(dev) mbStop(dev) end
+  self.callbacks.mute =
+    function(dev) cameraFlasherMute() micFlasherMute() end
 end
 
 --- WatcherWatcher:stop()
@@ -261,12 +269,34 @@ function WW:stop()
   return self
 end
 
+--- WatcherWatcher:mute()
+--- Method
+--- Mute any visual indicators until something further causes them
+--- to re-start.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Nothing
+function WW:mute()
+  self.log.d("Muting")
+
+  if self.callbacks.mute then
+    local ok, err = pcall(function() self.callbacks.mute() end)
+    if not ok then
+      self.log.ef("Error calling mute callback: %s", err)
+    end
+  end
+end
+
 --- WatcherWatcher:bindHotKeys(table)
 --- Method
 --- The method accepts a single parameter, which is a table. The keys of the
 --- table are strings that describe the action performed, and the values of
 --- the table are tables containing modifiers and keynames/keycodes. E.g.
 ---   {
+---     mute = {{"cmd", "alt"}, "s"},
 ---     stop = {{"cmd", "alt"}, "s"}
 ---    }
 ---
@@ -279,6 +309,7 @@ end
 
 function WW:bindHotKeys(mapping)
   local spec = {
+    mute = hs.fnutils.partial(self.stop, self),
     stop = hs.fnutils.partial(self.stop, self)
   }
   hs.spoons.bindHotkeysToSpec(spec, mapping)

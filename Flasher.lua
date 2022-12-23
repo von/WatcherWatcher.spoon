@@ -126,6 +126,7 @@ end
 ---     hs.audiodevice or a hs.camera device which has come into use.
 ---   * Stop callback function. Takes a single arugment, which is a
 ---     hs.audiodevice or a hs.camera device which has come into use.
+---   * Mute callback function. Takes no arguments.
 function Flasher:callbacks()
   self.icon = self:createIcon()
 
@@ -137,8 +138,9 @@ function Flasher:callbacks()
 
   local start = hs.fnutils.partial(self.show, self)
   local stop = hs.fnutils.partial(self.hide, self)
+  local mute = hs.fnutils.partial(self.hide, self)
 
-  return start, stop
+  return start, stop, mute
 end
 
 --- Flasher:show()
