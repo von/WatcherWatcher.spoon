@@ -131,24 +131,26 @@ end
 ---   * table with menu - see hs.menubar.setMenu()
 function MB:menubarCallback(modifiers)
   local t = {}
+  table.insert(t, { title = "Cameras", disabled = True })
   if self.monitorCameras then
     hs.fnutils.each(hs.camera.allCameras(),
       function(c)
         local name = c:name()
         if c:isInUse() then
-          name = self.RED_DOT .. name
+          name = name .. self.RED_DOT
         end
-        table.insert(t, { title = name })
+        table.insert(t, { title = name, indent = 1 })
       end)
   end
+  table.insert(t, { title = "Microphones", disabled = True })
   if self.monitorMics then
     hs.fnutils.each(hs.audiodevice.allInputDevices(),
       function(m)
         local name = m:name()
         if m:inUse() then
-          name = self.RED_DOT .. name
+          name = name .. self.RED_DOT
         end
-        table.insert(t, { title = name })
+        table.insert(t, { title = name, indent = 1 })
       end)
   end
   return t
