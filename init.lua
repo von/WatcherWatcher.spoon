@@ -16,7 +16,7 @@ local WW = {}
 
 -- Metadata
 WW.name="WatcherWatcher"
-WW.version="0.5"
+WW.version="0.6"
 WW.author="Von Welch"
 -- https://opensource.org/licenses/Apache-2.0
 WW.license="Apache-2.0"
