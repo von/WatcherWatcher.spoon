@@ -126,10 +126,10 @@ function WW:init()
   self.path = hs.spoons.scriptPath()
 
   self.Flasher = dofile(hs.spoons.resourcePath("Flasher.lua"))
-  self.Flasher:init()
+  self.Flasher:init(self)
 
   self.Menubar = dofile(hs.spoons.resourcePath("Menubar.lua"))
-  self.Menubar:init()
+  self.Menubar:init(self)
 
   return self
 end

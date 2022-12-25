@@ -39,11 +39,12 @@ MB.monitorMics = true
 --- Method
 --- Initialize module.
 --- Parameters:
----   * None
+---   * Creating WatcherWatcher instance
 ---
 --- Returns:
 ---   * Menbar instance
-function MB:init()
+function MB:init(ww)
+  self.ww = ww
   -- Set up logger
   self.log = hs.logger.new("Menubar")
 

@@ -25,11 +25,12 @@ Flasher.blinkInterval = 1.0
 --- Method
 --- Initialize module.
 --- Parameters:
----   * None
+---   * Creating WatcherWatcher instance
 ---
 --- Returns:
 ---   * Flasher instance
-function Flasher:init()
+function Flasher:init(ww)
+  self.ww = ww
   -- Set up logger
   self.log = hs.logger.new("Flasher")
 
