@@ -216,10 +216,11 @@ function WW:setupDefaultCallbacks()
 
   -- For a microphone in use, we create a smaller orange flashing circle
   -- in the upper right.
-  self.microphoneFlasher = self.Flasher:new("microphones")
-  self.microphoneFlasher.geometry = { x = -30, y = 20, w = 20, h = 20 }
-  self.microphoneFlasher.fillColor =
-    { alpha = 1.0, red = 1.0, green = 0.67 }
+  self.microphoneFlasher = self.Flasher:new("microphones",
+      {
+        geometry = { x = -30, y = 20, w = 20, h = 20 },
+        fillColor = { alpha = 1.0, red = 1.0, green = 0.67 }
+      })
   local micFlasherStart, micFlasherStop, micFlasherMute =
     self.microphoneFlasher:callbacks()
 

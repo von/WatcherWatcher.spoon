@@ -62,10 +62,12 @@ end
 --- and which can be configured separately.
 --- Parameters:
 ---   * Name (optional): Name to use for logging
+---   * options (option): dictionary of options for new instance
 ---
 --- Returns:
 ---   * New hs.WatcherWatcher.Flasher instance
-function Flasher:new(name)
+function Flasher:new(name, options)
+  self.log.d("Creating new Flasher")
   local f = {}
   for k,v in pairs(self) do
     f[k] = v
@@ -75,8 +77,52 @@ function Flasher:new(name)
     f.log = hs.logger.new("Flasher(" .. name ..")")
     f.log.setLogLevel(self.log.getLogLevel())
   end
+  if options then
+    for k,v in pairs(options) do
+      f[k] = v
+    end
+  end
+
+  f.icon = f:createIcon()
+
+  if f.blinkInterval > 0 then
+    f.blinkTimer = hs.timer.new(
+      f.blinkInterval,
+      hs.fnutils.partial(f.blink, f))
+  end
+
+  -- Refresh icon on screen changes to apply any geometry changes
+  f.screenWatcher = hs.screen.watcher.new(
+    hs.fnutils.partial(f.refreshIcon, f)):start()
+
+  f.log.d("New Flasher created")
   return f
 end
+
+--- Flasher:refreshIcon()
+--- Method
+--- Refresh the icon location. Called by hs.screen.watcher callback.
+--- Parameters:
+---   * None
+---
+--- Returns:
+---   * Nothing
+function Flasher:refreshIcon()
+  -- Make geometry relative to primaryScreen
+  -- Handle negative x or y as offsets from right or bottom
+  local screenFrame = hs.screen.primaryScreen():frame()
+  local x = screenFrame.x + geometry.x
+  if geometry.x < 0 then
+    x = x + screenFrame.w
+  end
+  local y = screenFrame.y + geometry.y
+  if geometry.x < 0 then
+    y = y + screenFrame.h
+  end
+  self.log.df("Refreshing icon geometry: x = %d y = %d", x, y)
+  self.icon:topLeft({x, y})
+end
+
 
 -- Flasher:createIcon()
 -- Method
@@ -87,17 +133,24 @@ end
 -- Returns:
 --   * hs.canvas instance
 function Flasher:createIcon()
-  -- XXX I suspect this doesn't handle multiple screens correctly
-  local geometry = self.geometry
+  -- Make a temporary copy of our geometry as to not modify original
+  local geometry = {}
+  for k,v in pairs(self.geometry) do
+    geometry[k] = v
+  end
+  -- Make geometry relative to primaryScreen
   -- Handle negative x or y as offsets from right or bottom
-  -- XXX Primary or main screen?
   local screenFrame = hs.screen.primaryScreen():frame()
-  if geometry.x < 0 then
-    geometry.x = screenFrame.w + geometry.x
+  geometry.x = screenFrame.x + self.geometry.x
+  if self.geometry.x < 0 then
+    geometry.x = geometry.x + screenFrame.w
   end
-  if geometry.y < 0 then
-    geometry.y = screenFrame.h + geometry.y
+  geometry.y = screenFrame.y + self.geometry.y
+  if self.geometry.y < 0 then
+    geometry.y = geometry.y + screenFrame.h
   end
+  self.log.df("Placing icon at: x = %d y = %d", geometry.x, geometry.y)
+
   local icon = hs.canvas.new(geometry)
   if not icon then
     self.log.e("Failed to create icon")
@@ -129,14 +182,6 @@ end
 ---     hs.audiodevice or a hs.camera device which has come into use.
 ---   * Mute callback function. Takes no arguments.
 function Flasher:callbacks()
-  self.icon = self:createIcon()
-
-  if self.blinkInterval > 0 then
-    self.blinkTimer = hs.timer.new(
-      self.blinkInterval,
-      hs.fnutils.partial(self.blink, self))
-  end
-
   local start = hs.fnutils.partial(self.show, self)
   local stop = hs.fnutils.partial(self.hide, self)
   local mute = hs.fnutils.partial(self.hide, self)
