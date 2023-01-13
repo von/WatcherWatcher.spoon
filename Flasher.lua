@@ -100,7 +100,7 @@ function Flasher:createIcon()
   end
   local icon = hs.canvas.new(geometry)
   if not icon then
-    self.e("Failed to create icon")
+    self.log.e("Failed to create icon")
     return nil
   end
   icon:appendElements({
