@@ -111,12 +111,12 @@ function Flasher:refreshIcon()
   -- Make geometry relative to primaryScreen
   -- Handle negative x or y as offsets from right or bottom
   local screenFrame = hs.screen.primaryScreen():frame()
-  local x = screenFrame.x + geometry.x
-  if geometry.x < 0 then
+  local x = screenFrame.x + self.geometry.x
+  if self.geometry.x < 0 then
     x = x + screenFrame.w
   end
-  local y = screenFrame.y + geometry.y
-  if geometry.x < 0 then
+  local y = screenFrame.y + self.geometry.y
+  if self.geometry.x < 0 then
     y = y + screenFrame.h
   end
   self.log.df("Refreshing icon geometry: x = %d y = %d", x, y)
