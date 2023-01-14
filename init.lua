@@ -211,6 +211,9 @@ function WW:setupDefaultCallbacks()
   -- We do a default big red flashing circle in the upper right corner
   -- for a camera in use.
   self.cameraFlasher = self.Flasher:new("camera")
+  if #self:camerasInUse() > 0 then
+    self.cameraFlasher:show()
+  end
   local cameraFlasherStart, cameraFlasherStop, cameraFlasherMute =
     self.cameraFlasher:callbacks()
 
@@ -221,6 +224,9 @@ function WW:setupDefaultCallbacks()
         geometry = { x = -30, y = 20, w = 20, h = 20 },
         fillColor = { alpha = 1.0, red = 1.0, green = 0.67 }
       })
+  if #self:micsInUse() > 0 then
+    self.microphoneFlasher:show()
+  end
   local micFlasherStart, micFlasherStop, micFlasherMute =
     self.microphoneFlasher:callbacks()
 
@@ -349,6 +355,17 @@ end
 --- Returns:
 ---   * List of microphones that are in use.
 function WW:micsInUse()
+  if self.honorZoomMuteStatus then
+    local zoomApp = hs.application.get("zoom.us")
+    if zoomApp then
+      if zoomApp:findMenuItem({ "Meeting", "Unmute Audio" }) then
+        -- Zoom is running and has audio muted. Treat mics as muted.
+        -- This isn't perfect as we don't know for sure that Zoom
+        -- has the microphone open.
+        return {}
+      end
+    end
+  end
   return hs.fnutils.filter(
     hs.audiodevice.allInputDevices(),
     function(a) return a:inUse() end)
