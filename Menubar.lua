@@ -105,12 +105,8 @@ end
 
 function MB:update()
   self.log.d("Updating menubar icon")
-  local cameraInUse = self.monitorCameras and not hs.fnutils.every(
-      hs.camera.allCameras(),
-      function(c) return not c:isInUse() end)
-  local micInUse = self.monitorMics and not hs.fnutils.every(
-      hs.audiodevice.allInputDevices(),
-      function(m) return not m:inUse() end)
+  local cameraInUse = self.monitorCameras and (#self.ww:camerasInUse() > 0)
+  local micInUse = self.monitorMics and (#self.ww:micsInUse() > 0)
 
   if cameraInUse and micInUse then
     self.menubar:setTitle(self.title.cameraAndMicInUse)
