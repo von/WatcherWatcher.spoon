@@ -116,7 +116,7 @@ function Flasher:refreshIcon()
     x = x + screenFrame.w
   end
   local y = screenFrame.y + self.geometry.y
-  if self.geometry.x < 0 then
+  if self.geometry.y < 0 then
     y = y + screenFrame.h
   end
   self.log.df("Refreshing icon geometry: x = %d y = %d", x, y)
