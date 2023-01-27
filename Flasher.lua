@@ -120,7 +120,8 @@ function Flasher:refreshIcon()
     y = y + screenFrame.h
   end
   self.log.df("Refreshing icon geometry: x = %d y = %d", x, y)
-  self.icon:topLeft({x, y})
+  -- Note: must use named x and y coordinates here
+  self.icon:topLeft({x = x, y = y})
 end
 
 
