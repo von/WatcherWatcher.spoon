@@ -523,7 +523,7 @@ function WW:audiodeviceCallback(uid, eventname, scope, element)
   if eventname == "gone" then
     dev = hs.audiodevice.findDeviceByUID(uid)
     if not dev then
-      hs.log.ef("Unkown audiodevice UID %s", uid)
+      self.log.ef("Unkown audiodevice UID %s", uid)
       return
     end
     if dev:inUse() then
