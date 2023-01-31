@@ -356,14 +356,8 @@ end
 ---   * List of microphones that are in use.
 function WW:micsInUse()
   if self.honorZoomMuteStatus then
-    local zoomApp = hs.application.get("zoom.us")
-    if zoomApp then
-      if zoomApp:findMenuItem({ "Meeting", "Unmute Audio" }) then
-        -- Zoom is running and has audio muted. Treat mics as muted.
-        -- This isn't perfect as we don't know for sure that Zoom
-        -- has the microphone open.
-        return {}
-      end
+    if self:checkZoomMuted() then
+      return {}
     end
   end
   return hs.fnutils.filter(
@@ -581,14 +575,11 @@ function WW:checkAudiodeviceForChange(device)
   local oldstate = self.audiodevicestate[device:uid()] or false
   local state = device:inUse()
   if state and self.honorZoomMuteStatus then
-    local zoomApp = hs.application.get("zoom.us")
-    if zoomApp then
-      if zoomApp:findMenuItem({ "Meeting", "Unmute Audio" }) then
-        -- Zoom is running and has audio muted. Treat mic as muted.
-        -- This isn't perfect as we don't know for sure that Zoom
-        -- has the microphone open.
-        state = false
-      end
+    if self:checkZoomMuted() then
+      -- Zoom is running and has audio muted. Treat mic as muted.
+      -- This isn't perfect as we don't know for sure that Zoom
+      -- has the microphone open.
+      state = false
     end
   end
   if state ~= oldstate then
@@ -607,6 +598,29 @@ function WW:audioDeviceTimerFunction()
   hs.fnutils.ieach(
     hs.audiodevice.allInputDevices(),
     hs.fnutils.partial(self.checkAudiodeviceForChange, self))
+end
+
+-- WatcherWatcher:checkZoomMuted()
+-- Is Zoom running and muted? Intended for use with honorZoomMuteStatus
+-- Note, this is imperfect as we don't know for sure Zoom has a particular
+-- microphone muted.
+--
+-- Parameters:
+--   * None
+--
+-- Returns:
+--   * True if Zoom running and muted, false otherwise
+function WW:checkZoomMuted()
+  local zoomApp = hs.application.get("zoom.us")
+  if zoomApp then
+    if zoomApp:findMenuItem({ "Meeting", "Unmute Audio" }) then
+      -- Zoom is running and has audio muted. Treat mic as muted.
+      -- This isn't perfect as we don't know for sure that Zoom
+      -- has the microphone open.
+      return true
+    end
+  end
+  return false
 end
 
 return WW
