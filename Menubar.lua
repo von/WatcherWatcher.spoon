@@ -8,6 +8,7 @@ local MB = {}
 -- Characters to potential use in the menubar title or menu itself
 MB.GREEN_DOT = "🟢"
 MB.RED_DOT = "🔴"
+MB.ORANGE_DIAMOND = "🔶"  -- U+1F536
 MB.CAMERA = "📷"
 MB.MICROPHONE = "🎙"
 
@@ -146,7 +147,11 @@ function MB:menubarCallback(modifiers)
       function(m)
         local name = m:name()
         if m:inUse() then
-          name = name .. self.RED_DOT
+          if self.ww.honorZoomMuteStatus and self.ww:checkZoomMuted() then
+            name = name .. self.ORANGE_DIAMOND
+          else
+            name = name .. self.RED_DOT
+          end
         end
         table.insert(t, { title = name, indent = 1 })
       end)
