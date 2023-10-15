@@ -36,6 +36,11 @@ MB.monitorCameras = true
 --- If true, includes microphones in menubar. Default is true.
 MB.monitorMics = true
 
+--- Menubar.menubarIfNothingInUse
+--- Variable
+--- If true, be present on menubar if nothing is in use.
+MB.menubarIfNothingInUse = false
+
 --- Menubar:init()
 --- Method
 --- Initialize module.
@@ -84,7 +89,8 @@ end
 ---   * Stop callback function. Takes a single arugment, which is a
 ---     hs.audiodevice or a hs.camera device which has come into use.
 function MB:callbacks()
-  self.menubar = hs.menubar.new()
+  -- First agument is whether item starts in menubar
+  self.menubar = hs.menubar.new(self.menubarIfNothingInUse)
   self.menubar:setMenu(hs.fnutils.partial(self.menubarCallback, self))
   self:update()
 
@@ -105,18 +111,32 @@ end
 ---   * Nothing
 
 function MB:update()
-  self.log.d("Updating menubar icon")
   local cameraInUse = self.monitorCameras and (#self.ww:camerasInUse() > 0)
   local micInUse = self.monitorMics and (#self.ww:micsInUse() > 0)
 
+  -- Note that ordering of returnToMenuBar() and setTitle() calls here
+  -- is important as calling setTitle() first seems to result in
+  -- the it not taking effect.
   if cameraInUse and micInUse then
+    self.log.d("Updating menubar icon: Camera and microphone in use")
+    self.menubar:returnToMenuBar()
     self.menubar:setTitle(self.title.cameraAndMicInUse)
   elseif cameraInUse then
+    self.log.d("Updating menubar icon: Camera in use")
+    self.menubar:returnToMenuBar()
     self.menubar:setTitle(self.title.cameraInUse)
   elseif micInUse then
+    self.log.d("Updating menubar icon: Microphone in use")
+    self.menubar:returnToMenuBar()
     self.menubar:setTitle(self.title.micInUse)
   else
-    self.menubar:setTitle(self.title.nothingInUse)
+    self.log.d("Updating menubar icon: Nothing in use")
+    if self.menubarIfNothingInUse then
+      self.menubar:returnToMenuBar()
+      self.menubar:setTitle(self.title.nothingInUse)
+    else
+      self.menubar:removeFromMenuBar()
+    end
   end
 end
 --- WatcherWatcher:menubarCallback()
