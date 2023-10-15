@@ -139,6 +139,8 @@ function MB:update()
     end
   end
 end
+
+
 --- WatcherWatcher:menubarCallback()
 --- Method
 --- Callback for when user clicks on the menubar item.
