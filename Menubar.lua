@@ -129,7 +129,8 @@ end
 ---   * table with menu - see hs.menubar.setMenu()
 function MB:menubarCallback(modifiers)
   local t = {}
-  table.insert(t, { title = "Mute", fn = function() self.ww:mute() end })
+  table.insert(t,
+    { title = "Disable Flashers", fn = function() self.ww:mute() end })
   table.insert(t, { title = "Cameras", disabled = True })
   if self.monitorCameras then
     hs.fnutils.each(hs.camera.allCameras(),
