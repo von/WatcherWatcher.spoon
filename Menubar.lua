@@ -131,30 +131,20 @@ function MB:menubarCallback(modifiers)
   local t = {}
   table.insert(t,
     { title = "Disable Flashers", fn = function() self.ww:mute() end })
-  table.insert(t, { title = "Cameras", disabled = True })
   if self.monitorCameras then
-    hs.fnutils.each(hs.camera.allCameras(),
+    hs.fnutils.each(self.ww:camerasInUse(),
       function(c)
         local name = c:name()
-        if c:isInUse() then
-          name = name .. self.RED_DOT
-        end
-        table.insert(t, { title = name, indent = 1 })
+        name = self.CAMERA .. name
+        table.insert(t, { title = name, indent = 0 })
       end)
   end
-  table.insert(t, { title = "Microphones", disabled = True })
   if self.monitorMics then
-    hs.fnutils.each(hs.audiodevice.allInputDevices(),
+    hs.fnutils.each(self.ww:micsInUse(),
       function(m)
         local name = m:name()
-        if m:inUse() then
-          if self.ww.honorZoomMuteStatus and self.ww:checkZoomMuted() then
-            name = name .. self.ORANGE_DIAMOND
-          else
-            name = name .. self.RED_DOT
-          end
-        end
-        table.insert(t, { title = name, indent = 1 })
+        name = self.MICROPHONE .. name
+        table.insert(t, { title = name, indent = 0 })
       end)
   end
   return t
