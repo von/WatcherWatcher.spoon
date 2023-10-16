@@ -21,6 +21,21 @@ setmetatable(SB, {
 --- Width of border as percentage of screen.
 SB.width = 0.5
 
+--- ScreenBorder:microphoneInUseColor
+--- Variable
+--- Color to use if only microphone is in use
+SB.microphoneInUseColor = { alpha = 1.0, red = 1.0, green = 1.0 }
+
+--- ScreenBorder:cameraInUseColor
+--- Variable
+--- Color to use if only camera is in use
+SB.micOnColor = { alpha = 1.0, red = 1.0 }
+
+--- ScreenBorder:cameraAndMicInUseColor
+--- Variable
+--- Color to use if camera and microphone are in use
+SB.cameraAndMicOnColor = { alpha = 1.0, red = 1.0 }
+
 --- ScreenBorder:init()
 --- Method
 --- Initialize module.
@@ -80,7 +95,7 @@ function SB:new(name, options)
     },{ -- Now draw border around what we just clipped
       type = "rectangle",
       frame = { x = "0%", y = "0%", h = "100%", w = "100%" },
-      fillColor = { alpha = 1.0, red = 1.0 },
+      fillColor = self.microphoneInUseColor, -- Arbitrary
       action = "fill"
 
     },{ -- Now reset clipping in case we add something else
@@ -90,6 +105,58 @@ function SB:new(name, options)
 
   s.log.d("New ScreenBorder created")
   return s
+end
+
+--- ScreenBorder:update()
+--- Method
+--- Update the border, colored based on what is in use.
+--- Possible hide it if nothing in use.
+--- Parameters:
+---   * None
+---
+--- Returns:
+---   * Nothing
+function SB:update()
+  local cameraInUse = #self.ww:camerasInUse() > 0
+  local micInUse = #self.ww:micsInUse() > 0
+
+  if cameraInUse and micInUse then
+    self.log.d("Updating: Camera and microphone in use")
+    self.canvas[3].fillColor = self.cameraAndMicOnColor
+    Indicator.show(self)
+  elseif cameraInUse then
+    self.log.d("Updating: Camera in use")
+    self.canvas[3].fillColor = self.cameraInUseColor
+    Indicator.show(self)
+  elseif micInUse then
+    self.log.d("Updating: Microphone in use")
+    self.canvas[3].fillColor = self.microphoneInUseColor
+    Indicator.show(self)
+  else
+    self.log.d("Updating: Nothing in use")
+    Indicator.hide(self)
+  end
+end
+
+--- ScreenBorder:callbacks()
+--- Method
+--- Return functions appropriate for WatcherWatcher callbacks that
+--- will cause indicator to appear and hide.
+--- Parameters:
+---   * None
+---
+--- Returns:
+---   * Start callback function. Takes a single arugment, which is a
+---     hs.audiodevice or a hs.camera device which has come into use.
+---   * Stop callback function. Takes a single arugment, which is a
+---     hs.audiodevice or a hs.camera device which has come into use.
+---   * Mute callback function. Takes no arguments.
+function Indicator:callbacks()
+  local start = hs.fnutils.partial(self.update, self)
+  local stop = hs.fnutils.partial(self.update, self)
+  local mute = hs.fnutils.partial(self.hide, self)
+
+  return start, stop, mute
 end
 
 return SB
