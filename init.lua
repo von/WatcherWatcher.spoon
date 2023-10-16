@@ -128,6 +128,9 @@ function WW:init()
   self.Flasher = dofile(hs.spoons.resourcePath("Flasher.lua"))
   self.Flasher:init(self)
 
+  self.ScreenBorder = dofile(hs.spoons.resourcePath("ScreenBorder.lua"))
+  self.ScreenBorder:init(self)
+
   self.Menubar = dofile(hs.spoons.resourcePath("Menubar.lua"))
   self.Menubar:init(self)
 
@@ -208,41 +211,29 @@ function WW:setupDefaultCallbacks()
 
   self.log.d("Setting up default callbacks")
 
-  -- We do a default big red flashing circle in the upper right corner
-  -- for a camera in use.
-  self.cameraFlasher = self.Flasher:new("camera")
+  self.sb = self.ScreenBorder:new()
+  local sbStartCallback, sbStopCallback, sbMuteCallback =
+    self.sb:callbacks()
   if #self:camerasInUse() > 0 then
-    self.cameraFlasher:show()
+    self.sb:show()
   end
-  local cameraFlasherStart, cameraFlasherStop, cameraFlasherMute =
-    self.cameraFlasher:callbacks()
-
-  -- For a microphone in use, we create a smaller orange flashing circle
-  -- in the upper right.
-  self.microphoneFlasher = self.Flasher:new("microphones",
-      {
-        geometry = { x = -30, y = 20, w = 20, h = 20 },
-        fillColor = { alpha = 1.0, red = 1.0, green = 0.67 }
-      })
   if #self:micsInUse() > 0 then
-    self.microphoneFlasher:show()
+    self.sb:show()
   end
-  local micFlasherStart, micFlasherStop, micFlasherMute =
-    self.microphoneFlasher:callbacks()
 
   self.menubar = WW.Menubar
   local mbStart, mbStop = self.menubar:callbacks()
 
   self.callbacks.cameraInUse =
-    function(dev) cameraFlasherStart(dev) mbStart(dev) end
+    function(dev) sbStartCallback(dev) mbStart(dev) end
   self.callbacks.cameraNotInUse =
-    function(dev) cameraFlasherStop(dev) mbStop(dev) end
+    function(dev) sbStopCallback(dev) mbStop(dev) end
   self.callbacks.micInUse =
-    function(dev) micFlasherStart(dev) mbStart(dev) end
+    function(dev) sbStartCallback(dev) mbStart(dev) end
   self.callbacks.micNotInUse =
-    function(dev) micFlasherStop(dev) mbStop(dev) end
+    function(dev) sbStopCallback(dev) mbStop(dev) end
   self.callbacks.mute =
-    function(dev) cameraFlasherMute() micFlasherMute() end
+    function(dev) sbMuteCallback() end
 end
 
 --- WatcherWatcher:stop()
