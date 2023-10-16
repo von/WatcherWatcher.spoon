@@ -4,6 +4,18 @@
 
 local Flasher = {}
 
+-- Flasher is a subclass of WatcherWatcher.Indicator
+local Indicator = dofile(hs.spoons.resourcePath("Indicator.lua"))
+
+-- Failed table lookups on the instances should fallback to the class table
+-- to get methods
+Flasher.__index = Flasher
+
+-- Failed lookups on class go to superclass
+setmetatable(Flasher, {
+  __index = Indicator
+})
+
 --- Flasher.geometry
 --- Variable
 --- Table with geometry for icon. Should be a square.
@@ -28,32 +40,14 @@ Flasher.blinkInterval = 1.0
 ---   * Creating WatcherWatcher instance
 ---
 --- Returns:
----   * Flasher instance
+---   * Flasher module
 function Flasher:init(ww)
-  self.ww = ww
-  -- Set up logger
+  -- Initialize super class
+  Indicator.init(self, ww)
+  -- Override logger with one with my name
   self.log = hs.logger.new("Flasher")
 
   return self
-end
-
---- Flasher:debug(enable)
---- Method
---- Enable or disable debugging
----
---- Parameters:
----  * enable - Boolean indicating whether debugging should be on
----
---- Returns:
----  * Nothing
-function Flasher:debug(enable)
-  if enable then
-    self.log.setLogLevel('debug')
-    self.log.d("Debugging enabled")
-  else
-    self.log.d("Disabling debugging")
-    self.log.setLogLevel('info')
-  end
 end
 
 --- Flasher:new()
@@ -68,131 +62,34 @@ end
 ---   * New hs.WatcherWatcher.Flasher instance
 function Flasher:new(name, options)
   self.log.d("Creating new Flasher")
-  local f = {}
-  for k,v in pairs(self) do
-    f[k] = v
-  end
-  if name then
-    f.name = name
-    f.log = hs.logger.new("Flasher(" .. name ..")")
-    f.log.setLogLevel(self.log.getLogLevel())
-  end
-  if options then
-    for k,v in pairs(options) do
-      f[k] = v
-    end
+  -- Create a new instance of Flasher
+  local s = Indicator.new(self, Flasher, name, options)
+  if not s then
+    return nil -- Assume Indicator.new() logged error
   end
 
-  f.icon = f:createIcon()
+  -- Fill canvas with a circle
+  s.canvas:appendElements({
+    type = "circle",
+    center = { x = ".5", y = ".5" },
+    radius = ".5",
+    fillColor = s.fillColor,
+    action = "fill"
+  })
 
-  if f.blinkInterval > 0 then
-    f.blinkTimer = hs.timer.new(
-      f.blinkInterval,
-      hs.fnutils.partial(f.blink, f))
+  if s.blinkInterval > 0 then
+    s.blinkTimer = hs.timer.new(
+      s.blinkInterval,
+      hs.fnutils.partial(s.blink, s))
   end
 
-  -- Refresh icon on screen changes to apply any geometry changes
-  f.screenWatcher = hs.screen.watcher.new(
-    hs.fnutils.partial(f.refreshIcon, f)):start()
-
-  f.log.d("New Flasher created")
-  return f
-end
-
---- Flasher:refreshIcon()
---- Method
---- Refresh the icon location. Called by hs.screen.watcher callback.
---- Parameters:
----   * None
----
---- Returns:
----   * Nothing
-function Flasher:refreshIcon()
-  -- Make geometry relative to primaryScreen
-  -- Handle negative x or y as offsets from right or bottom
-  local screenFrame = hs.screen.primaryScreen():frame()
-  local x = screenFrame.x + self.geometry.x
-  if self.geometry.x < 0 then
-    x = x + screenFrame.w
-  end
-  local y = screenFrame.y + self.geometry.y
-  if self.geometry.y < 0 then
-    y = y + screenFrame.h
-  end
-  self.log.df("Refreshing icon geometry: x = %d y = %d", x, y)
-  -- Note: must use named x and y coordinates here
-  self.icon:topLeft({x = x, y = y})
-end
-
-
--- Flasher:createIcon()
--- Method
--- Create an hs.canvas object representing the icon.
--- Parameters:
---   * None
---
--- Returns:
---   * hs.canvas instance
-function Flasher:createIcon()
-  -- Make a temporary copy of our geometry as to not modify original
-  local geometry = {}
-  for k,v in pairs(self.geometry) do
-    geometry[k] = v
-  end
-  -- Make geometry relative to primaryScreen
-  -- Handle negative x or y as offsets from right or bottom
-  local screenFrame = hs.screen.primaryScreen():frame()
-  geometry.x = screenFrame.x + self.geometry.x
-  if self.geometry.x < 0 then
-    geometry.x = geometry.x + screenFrame.w
-  end
-  geometry.y = screenFrame.y + self.geometry.y
-  if self.geometry.y < 0 then
-    geometry.y = geometry.y + screenFrame.h
-  end
-  self.log.df("Placing icon at: x = %d y = %d", geometry.x, geometry.y)
-
-  local icon = hs.canvas.new(geometry)
-  if not icon then
-    self.log.e("Failed to create icon")
-    return nil
-  end
-  icon:appendElements({
-      -- A circle basically filling the canvas
-      type = "circle",
-      center = { x = ".5", y = ".5" },
-      radius = ".5",
-      fillColor = self.fillColor,
-      action = "fill"
-    })
-
-  return icon
-end
-
---- Flasher:callbacks()
---- Method
---- Return functions appropriate for WatcherWatcher callbacks that
---- will cause icon to appear and hide.
---- Parameters:
----   * None
----
---- Returns:
----   * Start callback function. Takes a single arugment, which is a
----     hs.audiodevice or a hs.camera device which has come into use.
----   * Stop callback function. Takes a single arugment, which is a
----     hs.audiodevice or a hs.camera device which has come into use.
----   * Mute callback function. Takes no arguments.
-function Flasher:callbacks()
-  local start = hs.fnutils.partial(self.show, self)
-  local stop = hs.fnutils.partial(self.hide, self)
-  local mute = hs.fnutils.partial(self.hide, self)
-
-  return start, stop, mute
+  s.log.d("New Flasher created")
+  return s
 end
 
 --- Flasher:show()
 --- Method
---- Show the icon (possibilty starting to blink it).
+--- Show the indicator (possibilty starting to blink it).
 --- Parameters:
 ---   * None
 ---
@@ -200,33 +97,33 @@ end
 ---   * Nothing
 function Flasher:show()
   if self.blinkInterval > 0 then
-    self.log.d("Starting icon blinking")
+    self.log.d("Starting indicator blinking")
     self.blinkTimer:start()
   else
-    self.log.d("Showing icon")
-    self.icon:show()
+    self.log.d("Showing indicator")
+    self.canvas:show()
   end
 end
 
 --- Flasher:blink()
 --- Method
---- Toggle the icon.
+--- Toggle the indicator.
 --- Parameters:
 ---   * None
 ---
 --- Returns:
 ---   * Nothing
 function Flasher:blink()
-  if self.icon:isShowing() then
-    self.icon:hide()
+  if self.canvas:isShowing() then
+    self.canvas:hide()
   else
-    self.icon:show()
+    self.canvas:show()
   end
 end
 
 --- Flasher:hide()
 --- Method
---- Hide the icon.
+--- Hide the indicator.
 --- Parameters:
 ---   * None
 ---
@@ -234,12 +131,12 @@ end
 ---   * Nothing
 function Flasher:hide()
   if self.blinkInterval > 0 then
-    self.log.d("Stopping icon blinking")
+    self.log.d("Stopping indicator blinking")
     self.blinkTimer:stop()
-    self.icon:hide()
+    self.canvas:hide()
   else
-    self.log.d("Hiding icon")
-    self.icon:hide()
+    self.log.d("Hiding indicator")
+    self.canvas:hide()
   end
 end
 
