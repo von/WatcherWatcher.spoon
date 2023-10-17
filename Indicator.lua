@@ -39,6 +39,15 @@ function Indicator:init(ww)
   return self
 end
 
+--- Indicator:debug()
+--- Method
+--- Enable or disable debugging
+---
+--- Parameters:
+---  * enable - Boolean indicating whether debugging should be on
+---
+--- Returns:
+---  * Nothing
 function Indicator:debug(enable)
   if enable then
     self.log.setLogLevel('debug')
