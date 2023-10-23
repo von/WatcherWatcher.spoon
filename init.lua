@@ -492,8 +492,6 @@ end
 --- WatcherWatcher:audiodeviceCallback()
 --- Method
 --- Callback for audiodevice:watcherCallback()
---- XXX This is not getting called.
----     See https://github.com/Hammerspoon/hammerspoon/issues/3057
 --- Parameters:
 ---   * uid (string)
 ---   * eventname (string)
