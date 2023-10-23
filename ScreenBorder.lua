@@ -2,19 +2,9 @@
 --- Indicatgor for WatcherWatcher to create a border around the screen
 --- when a microphone or camera is in use.
 
-local SB = {}
-
 -- ScreenBorder is a subclass of WatcherWatcher.Indicator
 local Indicator = dofile(hs.spoons.resourcePath("Indicator.lua"))
-
--- Failed table lookups on the instances should fallback to the class table
--- to get methods
-SB.__index = SB
-
--- Failed lookups on class go to superclass
-setmetatable(SB, {
-  __index = Indicator
-})
+local SB = Indicator:subclass()
 
 --- ScreenBorder:width
 --- Variable

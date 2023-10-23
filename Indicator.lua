@@ -39,6 +39,33 @@ function Indicator:init(ww)
   return self
 end
 
+--- Indicator:subclass()
+--- Method
+--- Return a table suitable for creating a subclass of Indicator.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Table suitable for constructing subclass
+function Indicator:subclass()
+  local subcls = {}
+  
+  -- Failed table lookups on the instances should fallback to the
+  -- subclass table to get methods
+  subcls.__index = subcls
+  
+  -- Syntactic sugar
+  subcls.__super = Indicator
+
+  -- Failed lookups on subclass go to the superclass
+  setmetatable(subcls, {
+    __index = Indicator
+  })
+
+  return subcls
+end
+
 --- Indicator:debug()
 --- Method
 --- Enable or disable debugging
