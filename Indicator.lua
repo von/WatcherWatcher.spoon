@@ -16,11 +16,27 @@ setmetatable(Indicator, {
   end,
 })
 
+--- Indicator.geometry
+--- Variable
+--- Table with geometry for indicator. Should be a square.
+--- Can have negative values for x and y, in which case they are treated
+--- as offsets from right or bottom of screen respectively.
+--- Default is nil, which means to use whole primary screen.
+Indicator.geometry = nil
+
+--- Indicator.showFilter
+--- Variable
+--- showFilter should be a function which returns true if the indicator
+--- show be shown. Can be one of WatcherWatcher's methods: camerasInUse()
+--- micInUse(), or cameraOrMicInUse(). Or can be a custom function.
+--- By default, set to cameraOrMicInUse by init().
+Indicator.showFilter = nil
+
 --- Indicator:init()
 --- Method
 --- Initialize module.
 --- Parameters:
----   * Creating WatcherWatcher instance
+---   * Creating Indicator instance
 ---
 --- Returns:
 ---   * Indicator instance
@@ -34,7 +50,9 @@ function Indicator:init(ww)
   end
 
   self.ww = ww
-  self.geometry = nil
+
+  -- Set showFilter if not already set
+  self.showFilter = self.showFilter or ww.cameraOrMicInUse
 
   return self
 end
@@ -50,11 +68,11 @@ end
 ---  * Table suitable for constructing subclass
 function Indicator:subclass()
   local subcls = {}
-  
+
   -- Failed table lookups on the instances should fallback to the
   -- subclass table to get methods
   subcls.__index = subcls
-  
+
   -- Syntactic sugar
   subcls.__super = Indicator
 
@@ -97,13 +115,12 @@ end
 --- Returns:
 ---   * New instance of cls
 function Indicator:new(cls, name, options)
-  self.log.d("new() called")
   local s = setmetatable({}, cls)
 
   -- Create custom logger using name if given
   if name then
     s.name = name
-    s.log = hs.logger.new("Flasher(" .. name ..")")
+    s.log = hs.logger.new("Indicator(" .. name ..")")
     s.log.setLogLevel(cls.log.getLogLevel())
   end
 
@@ -113,19 +130,17 @@ function Indicator:new(cls, name, options)
     end
   end
 
-  if not s:createCanvas() then
-    return nil  -- Assume createCanvas() logged error
+  s.canvas = s:createCanvas()
+  if not s.canvas then
+    self.log.e("createCanvas() returned nil")
+    return nil
   end
-
-  -- Refresh canvas on screen changes to apply any geometry changes
-  s.screenWatcher = hs.screen.watcher.new(
-    hs.fnutils.partial(s.refresh, s)):start()
 
   return s
 end
 
 --- Indicator:refresh()
---- Refresh the indicator, presumably after some configuration or screen
+--- Refresh the indicator, called at startup and when there is a screen
 --- geometry change.
 --- Parameters:
 ---   * None
@@ -133,86 +148,96 @@ end
 --- Returns:
 ---   * Nothing
 function Indicator:refresh()
-  if not self.geometry then
-    self.log.e("refresh() called with geometry == nil")
-    return
+  if self.canvas then
+    self.canvas:delete()
+    self.canvas = nil
   end
-  -- Make geometry relative to primaryScreen
-  -- Handle negative x or y as offsets from right or bottom
-  local screenFrame = hs.screen.primaryScreen():frame()
-  local x = screenFrame.x + self.geometry.x
-  if self.geometry.x < 0 then
-    x = x + screenFrame.w
-  end
-  local y = screenFrame.y + self.geometry.y
-  if self.geometry.y < 0 then
-    y = y + screenFrame.h
-  end
-  self.log.df("Refreshing icon geometry: x = %d y = %d", x, y)
-  -- Note: must use named x and y coordinates here
-  self.canvas:topLeft({x = x, y = y})
+  self.canvas = self:createCanvas()
+  -- Make visible and appropriate to camera/microphone state
+  self:update()
 end
 
--- Indicator:createCanvas()
--- Method
--- Create self.canvas as an hs.canvas object for the indicator based on
--- self.geometry
--- Parameters:
---   * None
---
--- Returns:
---   * hs.canvas instance
-function Indicator:createCanvas()
-  if not self.geometry then
-    self.log.e("createCanvas() called with geometry == nil")
-    return
-  end
-  -- Make a temporary copy of our geometry as to not modify original
-  local geometry = {}
-  for k,v in pairs(self.geometry) do
-    geometry[k] = v
-  end
-  -- Make geometry relative to primaryScreen
-  -- Handle negative x or y as offsets from right or bottom
-  local screenFrame = hs.screen.primaryScreen():frame()
-  geometry.x = screenFrame.x + self.geometry.x
-  if self.geometry.x < 0 then
-    geometry.x = geometry.x + screenFrame.w
-  end
-  geometry.y = screenFrame.y + self.geometry.y
-  if self.geometry.y < 0 then
-    geometry.y = geometry.y + screenFrame.h
-  end
-  self.log.df("Placing canvas at: x = %d y = %d", geometry.x, geometry.y)
-
-  self.canvas = hs.canvas.new(geometry)
-  if not self.canvas then
-    self.log.e("Failed to create canvas")
-    return nil
-  end
-  
-  return self.canvas
-end
-
---- Indicator:callbacks()
+--- Indicator:createCanvas()
 --- Method
---- Return functions appropriate for WatcherWatcher callbacks that
---- will cause indicator to appear and hide.
+--- Create and return hs.canvas representing graphical indicator.
+--- This version creates an empty canvas using hs.geometry
+--- Uses self.geometry. Intended to be overriden by subclasses.
 --- Parameters:
 ---   * None
 ---
 --- Returns:
----   * Start callback function. Takes a single arugment, which is a
----     hs.audiodevice or a hs.camera device which has come into use.
----   * Stop callback function. Takes a single arugment, which is a
----     hs.audiodevice or a hs.camera device which has come into use.
----   * Mute callback function. Takes no arguments.
-function Indicator:callbacks()
-  local start = hs.fnutils.partial(self.show, self)
-  local stop = hs.fnutils.partial(self.hide, self)
-  local mute = hs.fnutils.partial(self.hide, self)
+---   * hs.canvas instance
+function Indicator:createCanvas()
+  -- self.geometry may be nil and will get sorted out by relativeGeometry()
+  geometry = self:relativeGeometry(self.geometry)
 
-  return start, stop, mute
+  self.log.df("Creating canvas at: x = %d y = %d h = %d w = %d",
+    geometry.x, geometry.y, geometry.h, geometry.w)
+
+  canvas = hs.canvas.new(geometry)
+  if not canvas then
+    self.log.e("Failed to create canvas (hs.canvas.new() failed)")
+    return nil
+  end
+
+  return canvas
+end
+
+-- Indicator:relativeGeometry()
+-- Method
+-- Given an hs.geometry return a copy modified to be relative to primary
+-- screen. This means if x or y is negative, they are replaced by
+-- values relative to the right or bottom edge of the primary screen.
+-- If given nil, returns a geometry matching primary screen.
+--
+-- Parameters:
+--   * hs.geometry instance
+--
+-- Returns:
+--   * hs.geometry instance modified relative to primary screen
+function Indicator:relativeGeometry(geometry)
+  local screenFrame = hs.screen.primaryScreen():frame()
+  if geometry then
+    -- Make given geometry relative to primaryScreen
+    -- Handle negative x or y as offsets from right or bottom
+    geometry.x = screenFrame.x + self.geometry.x
+    if self.geometry.x < 0 then
+      geometry.x = geometry.x + screenFrame.w
+    end
+    geometry.y = screenFrame.y + self.geometry.y
+    if self.geometry.y < 0 then
+      geometry.y = geometry.y + screenFrame.h
+    end
+  else
+    -- No geometry given, use ScreenFrame
+    geometry = {}
+    geometry.x = screenFrame.x
+    geometry.y = screenFrame.y
+    geometry.w = screenFrame.w
+    geometry.h = screenFrame.h
+  end
+
+  return geometry
+end
+
+--- Indicator:update()
+--- Method
+--- Called when the indicator should update its appearance based on a change
+--- in the cameras or microphones in use.
+---
+--- Parameters:
+---   * instigator (optional): The hs.camera or hs.microphone instance
+---     which caused the callback to be called.
+---
+--- Returns:
+---   * None
+function Indicator:update(instigator)
+  -- Assume showFilter is a WatcherWatcher method and include ww for self
+  if self.showFilter(self.ww) then
+    self:show()
+  else
+    self:hide()
+  end
 end
 
 --- Indicator:show()
@@ -247,6 +272,35 @@ function Indicator:hide()
   end
   self.log.d("Hiding indicator")
   self.canvas:hide()
+end
+
+--- Indicator:mute()
+--- Method
+--- Temporarly hide the indicator until some state changes..
+--- Parameters:
+---   * None
+---
+--- Returns:
+---   * Nothing
+function Indicator:mute()
+  self.log.d("Muting indicator")
+  self:hide()
+end
+
+--- Indicator:delete()
+--- Method
+--- Destroy the Indicator instance.
+--- Parameters:
+---   * None
+---
+--- Returns:
+---   * Nothing
+function Indicator:delete()
+  self.log.d("Deleting indicator")
+  if self.canvas then
+    self.canvas:delete()
+    self.canvas = nil
+  end
 end
 
 return Indicator

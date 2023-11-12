@@ -55,25 +55,40 @@ end
 ---   * New hs.WatcherWatcher.ScreenBorder instance
 function SB:new(name, options)
   self.log.d("Creating new ScreenBorder")
-  -- Create a new instance of ScreenBorder
-
-  -- Canvas should be full size of screen
-  local screenFrame = hs.screen.primaryScreen():frame()
   options = options or {}
-  options.geometry = { x = 0, y = 0, w = screenFrame.w, h = screenFrame.h }
+
+  -- Now superclass can do all the work
   local s = Indicator.new(self, SB, name, options)
   if not s then
     return nil -- Assume Indicator.new() logged error
   end
+  return s
+end
+
+
+--- ScreenBorder:createCanvas()
+--- Method
+--- Create and return hs.canvas representing graphical indicator.
+--- Uses self.geometry.
+---
+--- Parameters:
+---   * None
+---     contain negative dimensions. Otherwise use primary screen.
+---
+--- Returns:
+---   * hs.canvas instance
+function SB:createCanvas()
+  -- Call super call to create base canvas
+  local canvas = Indicator.createCanvas(self)
 
   -- Fill canvas with a border
-  local xy = string.format("%f%%", self.width)
-  local hw = string.format("%f%%", 100 - self.width * 2)
+  local xy = string.format("%f%%", self.widthPercentage)
+  local hw = string.format("%f%%", 100 - self.widthPercentage * 2)
 
   -- For an explaination of what is going on here, see:
   --   https://github.com/Hammerspoon/hammerspoon/issues/1331
-  s.canvas:appendElements({ -- Start by working on whole canvas
-      action = "build", 
+  canvas:appendElements({ -- Start by working on whole canvas
+      action = "build",
       type = "rectangle",
 
     },{ -- Remove inside of rectangle (note reversePath)
@@ -93,8 +108,8 @@ function SB:new(name, options)
     }
     )
 
-  s.log.d("New ScreenBorder created")
-  return s
+  self.log.d("New ScreenBorder created")
+  return canvas
 end
 
 --- ScreenBorder:update()
@@ -107,8 +122,8 @@ end
 --- Returns:
 ---   * Nothing
 function SB:update()
-  local cameraInUse = #self.ww:camerasInUse() > 0
-  local micInUse = #self.ww:micsInUse() > 0
+  local cameraInUse = self.ww:cameraInUse()
+  local micInUse = self.ww:micInUse()
 
   if cameraInUse and micInUse then
     self.log.d("Updating: Camera and microphone in use")
@@ -126,27 +141,6 @@ function SB:update()
     self.log.d("Updating: Nothing in use")
     Indicator.hide(self)
   end
-end
-
---- ScreenBorder:callbacks()
---- Method
---- Return functions appropriate for WatcherWatcher callbacks that
---- will cause indicator to appear and hide.
---- Parameters:
----   * None
----
---- Returns:
----   * Start callback function. Takes a single arugment, which is a
----     hs.audiodevice or a hs.camera device which has come into use.
----   * Stop callback function. Takes a single arugment, which is a
----     hs.audiodevice or a hs.camera device which has come into use.
----   * Mute callback function. Takes no arguments.
-function Indicator:callbacks()
-  local start = hs.fnutils.partial(self.update, self)
-  local stop = hs.fnutils.partial(self.update, self)
-  local mute = hs.fnutils.partial(self.hide, self)
-
-  return start, stop, mute
 end
 
 return SB

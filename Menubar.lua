@@ -2,7 +2,9 @@
 --- Callback for WatcherWatcher to create a menubar item when a microphone
 --- or camera is in use.
 
-local MB = {}
+-- Menubar is a subclass of WatcherWatcher.Indicator
+local Indicator = dofile(hs.spoons.resourcePath("Indicator.lua"))
+local MB = Indicator:subclass()
 
 -- Constants
 -- Characters to potential use in the menubar title or menu itself
@@ -57,62 +59,77 @@ function MB:init(ww)
   return self
 end
 
---- Menubar:debug(enable)
+--- Menubar:new()
 --- Method
---- Enable or disable debugging
+--- Unimplemeneted method. Menubar is a unary object.
 ---
---- Parameters:
----  * enable - Boolean indicating whether debugging should be on
----
---- Returns:
----  * Nothing
-function MB:debug(enable)
-  if enable then
-    self.log.setLogLevel('debug')
-    self.log.d("Debugging enabled")
-  else
-    self.log.d("Disabling debugging")
-    self.log.setLogLevel('info')
-  end
-end
-
---- Menubar:callbacks()
---- Method
---- Return functions appropriate for WatcherWatcher callbacks that
---- will cause menubar to appear and hide.
 --- Parameters:
 ---   * None
 ---
 --- Returns:
----   * Start callback function. Takes a single arugment, which is a
----     hs.audiodevice or a hs.camera device which has come into use.
----   * Stop callback function. Takes a single arugment, which is a
----     hs.audiodevice or a hs.camera device which has come into use.
-function MB:callbacks()
+---   * Nothing
+function MB:new()
+  self.log.ef("Unimplemented Menubar.new() called")
+end
+
+--- Menubar:createCanvas()
+--- Method
+--- Unimplemeneted method. Menubar does not use a canvas.
+---
+--- Parameters:
+---   * None
+---
+--- Returns:
+---   * Nothing
+function MB:createCanvas()
+  self.log.ef("Unimplemented Menubar.createCanvas() called")
+end
+
+--- Menubar:start()
+--- Method
+--- Start background activity.
+---
+--- Parameters:
+---   * None
+---
+--- Returns:
+---   * Menubar instance
+function MB:start(ww)
   -- First agument is whether item starts in menubar
   self.menubar = hs.menubar.new(self.menubarIfNothingInUse)
+  -- Create menu on demand so we show active cameras and microphones.
   self.menubar:setMenu(hs.fnutils.partial(self.menubarCallback, self))
   self:update()
+  return self
+end
 
-  local start = hs.fnutils.partial(self.update, self)
-  local stop = hs.fnutils.partial(self.update, self)
-
-  return start, stop
+--- Menubar:refresh()
+--- Does nothing.
+---
+--- Parameters:
+---   * None
+---
+--- Returns:
+---   * Nothing
+function MB:refresh()
+  self.log.d("refresh() called - doing nothing.")
 end
 
 --- Menubar:update()
 --- Method
 --- Set the menubar icon depending on state of usage of cameras and
 --- microphones.
+---
 --- Parameters:
----   * None
+---   * instigator (optional): hs.camera or hs.microphone instance which
+---     caused the callback.
 ---
 --- Returns:
 ---   * Nothing
 
-function MB:update()
-  local cameraInUse = self.monitorCameras and (#self.ww:camerasInUse() > 0)
-  local micInUse = self.monitorMics and (#self.ww:micsInUse() > 0)
+function MB:update(instigator)
+  local cameraInUse = self.ww:cameraInUse()
+  local micInUse = self.ww:micInUse()
 
   -- Note that ordering of returnToMenuBar() and setTitle() calls here
   -- is important as calling setTitle() first seems to result in
@@ -140,10 +157,66 @@ function MB:update()
   end
 end
 
+--- Menubar:show()
+--- Method
+--- Show the menubar icon.
+---
+--- Parameters:
+---   * None
+---
+--- Returns:
+---   * Nothing
+function MB:show()
+  self.log.d("Showing menubar icon")
+  self.menubar:returnToMenuBar()
+end
 
---- WatcherWatcher:menubarCallback()
+--- Menubar:hide()
+--- Method
+--- Hide the menubar icon.
+---
+--- Parameters:
+---   * None
+---
+--- Returns:
+---   * Nothing
+function MB:hide()
+  self.log.d("Hiding menubar icon")
+  self.menubar:removeFromMenuBar()
+end
+
+--- Menubar:mute()
+--- Method
+--- Does nothing.
+---
+--- Parameters:
+---   * None
+---
+--- Returns:
+---   * Nothing
+function MB:mute()
+  self.log.d("mute() called - doing nothing")
+end
+
+--- Menubar:delete()
+--- Method
+--- Destroy the Menubar instance.
+---
+--- Parameters:
+---   * None
+---
+--- Returns:
+---   * Nothing
+function MB:delete()
+  self.log.d("Deleting menubar")
+  self.menubar:delete()
+  self.menubar = nil
+end
+
+--- Menubar:menubarCallback()
 --- Method
 --- Callback for when user clicks on the menubar item.
+---
 --- Parameters:
 ---   * table indicating which keyboard modifiers were held down
 ---
@@ -152,7 +225,7 @@ end
 function MB:menubarCallback(modifiers)
   local t = {}
   table.insert(t,
-    { title = "Disable Flashers", fn = function() self.ww:mute() end })
+    { title = "Mute Indicators", fn = function() self.ww:mute() end })
   if self.monitorCameras then
     hs.fnutils.each(self.ww:camerasInUse(),
       function(c)

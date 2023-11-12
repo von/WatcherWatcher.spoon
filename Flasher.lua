@@ -2,19 +2,10 @@
 --- Callback for WatcherWatcher to create a flashing icon on the screen
 --- when a microphone or camera is in use.
 
-local Flasher = {}
 
 -- Flasher is a subclass of WatcherWatcher.Indicator
 local Indicator = dofile(hs.spoons.resourcePath("Indicator.lua"))
-
--- Failed table lookups on the instances should fallback to the class table
--- to get methods
-Flasher.__index = Flasher
-
--- Failed lookups on class go to superclass
-setmetatable(Flasher, {
-  __index = Indicator
-})
+local Flasher = Indicator:subclass()
 
 --- Flasher.geometry
 --- Variable
@@ -68,23 +59,39 @@ function Flasher:new(name, options)
     return nil -- Assume Indicator.new() logged error
   end
 
+  return s
+end
+
+--- Flasher:createCanvas()
+--- Method
+--- Create and return hs.canvas representing graphical indicator.
+---
+--- Parameters:
+---   * None
+---
+--- Returns:
+---   * New hs.canvas instance
+function Flasher:createCanvas()
+  -- Call super call to create base canvas
+  local canvas = Indicator.createCanvas(self)
+
   -- Fill canvas with a circle
-  s.canvas:appendElements({
+  canvas:appendElements({
     type = "circle",
     center = { x = ".5", y = ".5" },
     radius = ".5",
-    fillColor = s.fillColor,
+    fillColor = self.fillColor,
     action = "fill"
   })
 
-  if s.blinkInterval > 0 then
-    s.blinkTimer = hs.timer.new(
-      s.blinkInterval,
-      hs.fnutils.partial(s.blink, s))
+  if self.blinkInterval > 0 then
+    self.log.df("Starting blink timer with interval %d", self.blinkInterval)
+    self.blinkTimer = hs.timer.new(
+      self.blinkInterval,
+      hs.fnutils.partial(self.blink, self))
   end
 
-  s.log.d("New Flasher created")
-  return s
+  return canvas
 end
 
 --- Flasher:show()

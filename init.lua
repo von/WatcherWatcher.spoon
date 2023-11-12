@@ -6,10 +6,14 @@
 ---   http://www.hammerspoon.org/Spoons/MicMute.html
 ---   https://github.com/jpf/Zoom.spoon
 ---
---- Behavior is configurable with WatcherWatcher.callbacks, default
---- is to provide camera and microphone status via a menubar icon
---- and via blinking circles in the upper righthand corner of the
---- screen.
+--- Behavior when a camera or microphone turning on is configurable
+--- by adding WatcherWatcher.Indicators.
+---
+--- The default is to add two indicators: a WatcherWatcher.Menubar and
+--- a WatcherWatcher.ScreenBorder. The default can be disabled by
+--- setting WatcherWatcher.enableMenubar and/or
+--- WatcherWatcher.enableDefaultIndicators to false before
+--- calling WatcherWatcher:start().
 
 local WW = {}
 
@@ -39,14 +43,6 @@ WW.delayInUseCallbacks = 5
 --- If true (the default), monitor microphones.
 WW.monitorMics = true
 
---- WatcherWatcher.audiodeviceTimerInterval
---- Variable
---- A workaround for audiodevice callbacks not working. If non-zero,
---- run a timer which checks audiodevices every given number of seconds.
---- Default is 5 seconds.
---- See https://github.com/Hammerspoon/hammerspoon/issues/3057
-WW.audiodeviceTimerInterval = 5
-
 --- WatcherWatcher.honorZoomMuteStatus
 --- Variable
 --- Zoom activiates the microphone and then implements its own mute, so
@@ -55,34 +51,24 @@ WW.audiodeviceTimerInterval = 5
 --- Default is true.
 WW.honorZoomMuteStatus = true
 
---- WatcherWatcher.callbacks
+--- WatcherWatcher.zoomMuteTimerInterval
 --- Variable
---- A table with the following keys:
----   * cameraInUse: callback when a camera becomes in use.
----     This function should take a single parameter of a hs.camera instance
----     and return nothing.
----   * cameraNotInUse: callback when a camera becomes not in use.
----     This function should take a single parameter of a hs.camera instance
----     and return nothing.
----   * micInUse: callback for when a microphone becomes in use.
----     This function should take a single parameter of a hs.audiodevice instance
----     and return nothing.
----   * micNotInUse: callback for when a microphone becomes not in use.
----     This function should take a single parameter of a hs.audiodevice instance
----     and return nothing.
----   * mute: callback from when user requests muting of indicators.
----     This function should take no aguments and return nothing.
----
---- WatcherWatcher comes with two callbacks that can be used:
----   * WatcherWatcher.Flasher, a blinking icon that can appear on the screen.
----   * WatcherWatcher.Menubar, a menubar item
-WW.callbacks = {
-  cameraInUse = nil,
-  cameraNotInUse = nil,
-  micInUse = nil,
-  micNotInUse = nil,
-  mute = nil
-}
+--- Zoom muting/unmuting does not trigger a callback, so if we are honoring
+--- Zoom mute status, we need to manually check Zoom's state to see if it
+--- has the microphone muted.
+--- Default is 5 seconds.
+WW.zoomMuteTimerInterval = 5
+
+--- WatcherWatcher.enableMenubar
+--- Variable
+--- Display the an indicator in the Mac menubar (via the Menubar class)
+--- when a camera or microphone is active.
+WW.enableMenubar = true
+
+--- WatcherWatcher.enableDefaultIndicators
+--- Variable
+--- Enable the default indicator, which is a ScreenBorder
+WW.enableDefaultIndicators = true
 
 --- WatcherWatcher:debug(enable)
 --- Method
@@ -134,13 +120,11 @@ function WW:init()
   self.Menubar = dofile(hs.spoons.resourcePath("Menubar.lua"))
   self.Menubar:init(self)
 
+  -- List of Indicator instances we are driving.
+  self.indicators = {}
+
   return self
 end
-
---start() and stop()
---If your Spoon provides some kind of background activity, e.g. timers, watchers,
---spotlight searches, etc. you should generally activate them in a :start()
---method, and de-activate them in a :stop() method
 
 --- WatcherWatcher:start()
 --- Method
@@ -155,6 +139,7 @@ function WW:start()
   self.log.d("Starting")
 
   if self.monitorCameras then
+    self.log.d("Starting monitoring of cameras")
     local cameraWatcherCallback =
       hs.fnutils.partial(WW.cameraWatcherCallback, self)
     hs.camera.setWatcherCallback(cameraWatcherCallback)
@@ -169,6 +154,7 @@ function WW:start()
   end
 
   if self.monitorMics then
+    self.log.d("Starting monitoring of microphones")
     local audiodeviceWatcherCallback = hs.fnutils.partial(
       WW.audiodeviceWatcherCallback, self)
     hs.audiodevice.watcher.setCallback(audiodeviceWatcherCallback)
@@ -176,64 +162,50 @@ function WW:start()
 
     self:setupAudiodeviceCallbacks()
 
-    if self.audiodeviceTimerInterval > 0 then
+    if self.honorZoomMuteStatus then
       self.audiodevicestate = {}
       self.log.df(
-        "Starting audiodevice timer (interval: %d)",
-        self.audiodeviceTimerInterval)
-      self.audiodeviceTimer = hs.timer.doEvery(
-        self.audiodeviceTimerInterval,
-        hs.fnutils.partial(self.audioDeviceTimerFunction, self))
+        "Starting Zom mute timer (interval: %d)",
+        self.zoomMuteTimerInterval)
+      self.zoomMuteTimer = hs.timer.doEvery(
+        self.zoomMuteTimerInterval,
+        hs.fnutils.partial(self.zoomMuteTimerFunction, self))
+      self.zoomMuteTimer:start()
     end
   end
 
-  self:setupDefaultCallbacks()
+  if self.enableMenubar then
+    self.menubar = WW.Menubar
+    self.menubar:start()
+    self:addIndicator(self.menubar)
+  end
+
+  if self.enableDefaultIndicators then
+    self.log.d("Adding default ScreenBorder indicator")
+    local sb = self.ScreenBorder:new()
+    self:addIndicator(sb)
+  end
+
+  -- Refresh indicators on screen changes to apply any geometry changes
+  self.screenWatcher = hs.screen.watcher.new(
+    hs.fnutils.partial(self.refreshAllIndicators, self)):start()
 
   return self
 end
 
--- WatcherWatcher:setupDefaultCallbacks()
--- Method
--- Set up default callbacks if callbacks are unset.
--- Parameters:
---   * None
---
--- Returns:
---   * Nothing
-function WW:setupDefaultCallbacks()
-  -- If there is any sign of callbacks having been set up, then
-  -- we don't touch them.
-  if self.callbacks.cameraInUse or self.callbacks.cameraNotInUse or
-    self.callbacks.micInUse or self.callbacks.micNotInUse or
-    self.callbacks.mute then
-    return
-  end
-
-  self.log.d("Setting up default callbacks")
-
-  self.sb = self.ScreenBorder:new()
-  local sbStartCallback, sbStopCallback, sbMuteCallback =
-    self.sb:callbacks()
-  if #self:camerasInUse() > 0 then
-    self.sb:show()
-  end
-  if #self:micsInUse() > 0 then
-    self.sb:show()
-  end
-
-  self.menubar = WW.Menubar
-  local mbStart, mbStop = self.menubar:callbacks()
-
-  self.callbacks.cameraInUse =
-    function(dev) sbStartCallback(dev) mbStart(dev) end
-  self.callbacks.cameraNotInUse =
-    function(dev) sbStopCallback(dev) mbStop(dev) end
-  self.callbacks.micInUse =
-    function(dev) sbStartCallback(dev) mbStart(dev) end
-  self.callbacks.micNotInUse =
-    function(dev) sbStopCallback(dev) mbStop(dev) end
-  self.callbacks.mute =
-    function(dev) sbMuteCallback() end
+--- WatcherWatcher:addIndicator()
+--- Method
+--- Given an Indicator (presumably a subclass) instance, activate it and
+--- set it up to show status.
+---
+--- Parameters:
+---   * indicator: Indicator instance
+---
+--- Returns:
+---   * Nothing
+function WW:addIndicator(indicator)
+  table.insert(self.indicators, indicator)
+  self.log.df("Added Indicator: %d total", #self.indicators)
 end
 
 --- WatcherWatcher:stop()
@@ -268,10 +240,18 @@ function WW:stop()
         m:watcherCallback(nil)
         m:watcherStop()
       end)
-    if audiodeviceTimerInterval then
-      self.audiodeviceTimer:stop()
+    if honorZoomMuteStatus then
+      self.zoomMuteTimer:stop()
     end
   end
+
+  hs.fnutils.each(self.indicators,
+    function(indicator)
+      local ok, err = pcall(function() indicator.delete() end)
+      if not ok then
+        self.log.ef("Error calling indicator.delete(): %s", err)
+      end
+    end)
 
   return self
 end
@@ -289,12 +269,13 @@ end
 function WW:mute()
   self.log.d("Muting")
 
-  if self.callbacks.mute then
-    local ok, err = pcall(function() self.callbacks.mute() end)
-    if not ok then
-      self.log.ef("Error calling mute callback: %s", err)
-    end
-  end
+  hs.fnutils.each(self.indicators,
+    function(indicator)
+      local ok, err = pcall(function() indicator:mute() end)
+      if not ok then
+        self.log.ef("Error calling indicator.mute(): %s", err)
+      end
+    end)
 end
 
 --- WatcherWatcher:bindHotKeys(table)
@@ -323,6 +304,36 @@ function WW:bindHotKeys(mapping)
   return self
 end
 
+--- WatcherWatcher:cameraInUse()
+--- Method
+--- Returns true if a camera is in use.
+--- If monitorCameras is false, always returns false.
+---
+--- Parameters:
+---   * None
+---
+--- Returns:
+---   * true if a camera is in use, false otherwise.
+function WW:cameraInUse()
+  return hs.fnutils.some(
+    hs.camera.allCameras(),
+    function(c) return c:isInUse() end)
+end
+
+--- WatcherWatcher:cameraOrMicInUse()
+--- Method
+--- Returns true if a camera or microhone is in use.
+--- See cameraInUse() and micInUse() for caveats.
+---
+--- Parameters:
+---   * None
+---
+--- Returns:
+---   * true if a camera or is in use, false otherwise.
+function WW:cameraOrMicInUse()
+  return self:micInUse() or self:cameraInUse()
+end
+
 --- WatcherWatcher:camerasInUse()
 --- Method
 --- Return a list of cameras that are in use.
@@ -337,6 +348,29 @@ function WW:camerasInUse()
     function(c) return c:isInUse() end)
 end
 
+--- WatcherWatcher:micInUse()
+--- Method
+--- Is a microphone in use?
+--- If monitorMics is false, always returns false.
+--- If honorZoomMuteStatus is true, always returns false if Zoom is muted.
+---
+--- Parameters:
+---   * None
+---
+--- Returns:
+---   * true if a microphone is in use, false otherwise.
+function WW:micInUse()
+  if not self.monitorMics then
+    return false
+  end
+  if self.honorZoomMuteStatus and self.ZMM:muted() then
+    return false
+  end
+  return hs.fnutils.some(
+    hs.audiodevice.allInputDevices(),
+    function(a) return a:inUse() end)
+end
+
 --- WatcherWatcher:micsInUse()
 --- Method
 --- Return a list of microphones that are in use.
@@ -346,11 +380,6 @@ end
 --- Returns:
 ---   * List of microphones that are in use.
 function WW:micsInUse()
-  if self.honorZoomMuteStatus then
-    if self:checkZoomMuted() then
-      return {}
-    end
-  end
   return hs.fnutils.filter(
     hs.audiodevice.allInputDevices(),
     function(a) return a:inUse() end)
@@ -379,6 +408,46 @@ function WW:cameraWatcherCallback(camera, change)
   end
 end
 
+--- WatcherWatcher:updateAllIndicators()
+--- Method
+--- Update all attached indicators (including the Menubar).
+--- Parameters:
+---   * instigator (optional): hs.camera or hs.microphone instance spurring
+---     the update.
+---
+--- Returns:
+---   * Nothing
+function WW:updateAllIndicators(instigator)
+  self.log.df("Updating %s indicators", #self.indicators)
+  hs.fnutils.each(self.indicators,
+    function(indicator)
+      local ok, err = pcall(function() indicator:update(instigator) end)
+      if not ok then
+        self.log.ef("Error calling indicator.update callback: %s", err)
+      end
+    end)
+end
+
+--- WatcherWatcher:refreshAllIndicators()
+--- Method
+--- Refresh all attached indicators (including the Menubar).
+--- Presumably due to a screen geometry change.
+--- Parameters:
+---   * None
+---
+--- Returns:
+---   * Nothing
+function WW:refreshAllIndicators()
+  self.log.df("Refreshing %d indicators", #self.indicators)
+  hs.fnutils.each(self.indicators,
+    function(indicator)
+      local ok, err = pcall(function() indicator:refresh() end)
+      if not ok then
+        self.log.ef("Error calling indicator.refresh callback: %s", err)
+      end
+    end)
+end
+
 --- WatcherWatcher:cameraPropertyCallback()
 --- Method
 --- Callback for hs.camera.setPropertyWatcherCallback()
@@ -394,29 +463,15 @@ function WW:cameraPropertyCallback(camera, prop, scope, eventnum)
   self.log.df("cameraPropertyCallback(%s, %s, %s, %d, %s)",
     camera:name(), prop, scope, eventnum, tostring(camera:isInUse()))
   if prop == "gone" then
-    if camera:isInUse() then
-      if self.delayInUseCallbacks then
-        self.log.df("Delaying callback from %s for %f seconds.",
-          camera:name(), self.delayInUseCallbacks)
-        hs.timer.doAfter(self.delayInUseCallbacks,
-          hs.fnutils.partial(self.cameraInUseDelayedCallback,
-            self, camera, prop, scope, eventnum))
-        return
-      end
-      if self.callbacks.cameraInUse then
-        local ok, err = pcall(function() self.callbacks.cameraInUse(dev) end)
-        if not ok then
-          self.log.ef("Error calling cameraInUse callback: %s", err)
-        end
-      end
-    else
-      if self.callbacks.cameraNotInUse then
-        local ok, err = pcall(function() self.callbacks.cameraNotInUse(dev) end)
-        if not ok then
-          self.log.ef("Error calling cameraNotInUse callback: %s", err)
-        end
-      end
+    if self.delayInUseCallbacks > 0 then
+      self.log.df("Delaying callback from camera %s for %f seconds.",
+        camera:name(), self.delayInUseCallbacks)
+      hs.timer.doAfter(self.delayInUseCallbacks,
+        hs.fnutils.partial(self.cameraInUseDelayedCallback,
+          self, camera, prop, scope, eventnum))
+      return
     end
+    self:updateAllIndicators(camera)
   end
 end
 
@@ -439,16 +494,7 @@ end
 function WW:cameraInUseDelayedCallback(camera, prop, scope, eventnum)
   self.log.df("cameraInUseDelayedCallback(%s, %s, %s, %d, %s)",
     camera:name(), prop, scope, eventnum, tostring(camera:isInUse()))
-  if camera:isInUse() then
-    if self.callbacks.cameraInUse then
-      local ok, err = pcall(function() self.callbacks.cameraInUse(dev) end)
-      if not ok then
-        self.log.ef("Error calling cameraInUse callback: %s", err)
-      end
-    end
-  else
-    self.log.d("Camera not in use. Ignoring.")
-  end
+  self:updateAllIndicators(camera)
 end
 
 --- WatcherWatcher:audiodeviceWatcherCallback()
@@ -487,8 +533,6 @@ function WW:setupAudiodeviceCallbacks()
         m:watcherStart()
       end
     end)
-  d = hs.audiodevice.allInputDevices()[1]
-  self.log.df("Running: %s (%s) %s", d, d:uid(), d:watcherIsRunning())  -- DEBUG
 end
 
 --- WatcherWatcher:audiodeviceCallback()
@@ -504,7 +548,7 @@ end
 --- Returns:
 ---   * Nothing
 function WW:audiodeviceCallback(uid, eventname, scope, element)
-  self.log.df("WWW.audiodeviceCallback(%s, %s, %s, %d)",
+  self.log.df("audiodeviceCallback(%s, %s, %s, %d)",
     uid, eventname, scope, element)
   if eventname == "gone" then
     dev = hs.audiodevice.findDeviceByUID(uid)
@@ -512,45 +556,7 @@ function WW:audiodeviceCallback(uid, eventname, scope, element)
       self.log.ef("Unkown audiodevice UID %s", uid)
       return
     end
-    if dev:inUse() then
-      self:micInUse(dev)
-    else
-      self:micNotInUse(dev)
-    end
-  end
-end
-
--- WatcherWatcher:micInUse()
--- Handle transition of a microphone to being in use.
--- Parameters:
---   * hs.audiodevice instance
---
--- Returns:
---   * Nothing
-function WW:micInUse(device)
-  self.log.df("Microphone %s in use", device:name())
-  if self.callbacks.micInUse then
-    local ok, err = pcall(function() self.callbacks.micInUse(device) end)
-    if not ok then
-      self.log.ef("Error calling micInUse callback: %s", err)
-    end
-  end
-end
-
--- WatcherWatcher:micNotInUse()
--- Handle transition of a microphone to being not in use.
--- Parameters:
---   * hs.audiodevice instance
---
--- Returns:
---   * Nothing
-function WW:micNotInUse(device)
-  self.log.df("Microphone %s not in use", device:name())
-  if self.callbacks.micNotInUse then
-    local ok, err = pcall(function() self.callbacks.micNotInUse(device) end)
-    if not ok then
-      self.log.ef("Error calling micInUse callback: %s", err)
-    end
+    self:updateAllIndicators(dev)
   end
 end
 
@@ -576,18 +582,20 @@ function WW:checkAudiodeviceForChange(device)
     end
   end
   if state ~= oldstate then
+    self.log.df(
+        "Detected change in audio device %s status. Updating indicators",
+        device.name)
     self.audiodevicestate[device:uid()] = state
-    if state then
-      self:micInUse(device)
-    else
-      self:micNotInUse(device)
-    end
+    self:updateAllIndicators(device)
   end
 end
 
--- WatcherWatcher:audioDeviceTimerFunction()
+-- WatcherWatcher:zoomMuteTimerFunction()
 --
-function WW:audioDeviceTimerFunction()
+-- Called by zoomMuteTimer
+function WW:zoomMuteTimerFunction()
+  -- Check for state change, taking Zoom mute into account
+  -- Update indicators if state change has occurred.
   hs.fnutils.ieach(
     hs.audiodevice.allInputDevices(),
     hs.fnutils.partial(self.checkAudiodeviceForChange, self))
