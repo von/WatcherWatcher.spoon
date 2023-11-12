@@ -454,6 +454,7 @@ end
 --- WatcherWatcher:audiodeviceWatcherCallback()
 --- Method
 --- Callback for hs.audiodevice.watcher
+---
 --- Parameters:
 ---   * String with change
 ---
@@ -470,6 +471,7 @@ end
 --- WatcherWatcher:setupAudiodeviceCallbacks()
 --- Method
 --- Make sure we have callbacks set up for all input audiodevices.
+---
 --- Parameters:
 ---   * None
 ---
@@ -492,6 +494,7 @@ end
 --- WatcherWatcher:audiodeviceCallback()
 --- Method
 --- Callback for audiodevice:watcherCallback()
+---
 --- Parameters:
 ---   * uid (string)
 ---   * eventname (string)
@@ -555,6 +558,7 @@ end
 -- Check status of audiodevice against what is in self.audiodevicestate
 -- (table keyed by uids, with false == not in use, true == in use)
 -- and invoke state changes as approproate.
+--
 -- Parameters:
 --   * hs.audiodevice instance
 --
