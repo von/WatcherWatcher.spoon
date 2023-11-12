@@ -176,7 +176,7 @@ function WW:start()
 
     self:setupAudiodeviceCallbacks()
 
-    if self.audiodeviceTimerInterval then
+    if self.audiodeviceTimerInterval > 0 then
       self.audiodevicestate = {}
       self.log.df(
         "Starting audiodevice timer (interval: %d)",
