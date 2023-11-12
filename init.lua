@@ -538,7 +538,7 @@ end
 
 --- WatcherWatcher:audiodeviceCallback()
 --- Method
---- Callback for audiodevice:watcherCallback()
+--- Callback for hs.audiodevice:watcherCallback()
 ---
 --- Parameters:
 ---   * uid (string)
