@@ -31,12 +31,13 @@ WW.homepage="https://github.com/von/WatcherWatcher.spoon"
 --- If true (default), monitor cameras.
 WW.monitorCameras = true
 
---- WatcherWatcher.delayInUseCallbacks
+--- WatcherWatcher.delayCameraInUseCallbacks
 --- Variable
---- If non-zero, delay in use callbacks by given number of seconds (default 5)
---- to ignore spurious callbacks when laptop sleeps/wakes.
+--- If non-zero, delay in use callbacks for cameras by given number of
+--- seconds (default 5) to ignore spurious callbacks when laptop
+--- sleeps/wakes.
 --- See: https://github.com/von/WatcherWatcher.spoon/issues/2
-WW.delayInUseCallbacks = 5
+WW.delayCameraInUseCallbacks = 5
 
 --- WatcherWatcher.monitorMics
 --- Variable
@@ -463,10 +464,10 @@ function WW:cameraPropertyCallback(camera, prop, scope, eventnum)
   self.log.df("cameraPropertyCallback(%s, %s, %s, %d, %s)",
     camera:name(), prop, scope, eventnum, tostring(camera:isInUse()))
   if prop == "gone" then
-    if self.delayInUseCallbacks > 0 then
+    if self.delayCameraInUseCallbacks > 0 then
       self.log.df("Delaying callback from camera %s for %f seconds.",
-        camera:name(), self.delayInUseCallbacks)
-      hs.timer.doAfter(self.delayInUseCallbacks,
+        camera:name(), self.delayCameraInUseCallbacks)
+      hs.timer.doAfter(self.delayCameraInUseCallbacks,
         hs.fnutils.partial(self.cameraInUseDelayedCallback,
           self, camera, prop, scope, eventnum))
       return
