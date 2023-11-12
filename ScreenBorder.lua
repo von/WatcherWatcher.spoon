@@ -9,7 +9,7 @@ local SB = Indicator:subclass()
 --- ScreenBorder:width
 --- Variable
 --- Width of border as percentage of screen.
-SB.width = 0.5
+SB.widthPercentage = 0.5
 
 --- ScreenBorder:microphoneInUseColor
 --- Variable
