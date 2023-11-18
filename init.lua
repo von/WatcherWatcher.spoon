@@ -52,14 +52,6 @@ WW.monitorMics = true
 --- Default is true.
 WW.honorZoomMuteStatus = true
 
---- WatcherWatcher.zoomMuteTimerInterval
---- Variable
---- Zoom muting/unmuting does not trigger a callback, so if we are honoring
---- Zoom mute status, we need to manually check Zoom's state to see if it
---- has the microphone muted.
---- Default is 5 seconds.
-WW.zoomMuteTimerInterval = 5
-
 --- WatcherWatcher.enableMenubar
 --- Variable
 --- Display the an indicator in the Mac menubar (via the Menubar class)
@@ -117,6 +109,9 @@ function WW:init()
   self.Menubar = dofile(hs.spoons.resourcePath("Menubar.lua"))
   self.Menubar:init(self)
 
+  self.ZMM = dofile(hs.spoons.resourcePath("ZoomMuteMonitor.lua"))
+  self.ZMM:init(self)
+
   -- List of Indicator instances we are driving.
   self.indicators = {}
 
@@ -160,14 +155,9 @@ function WW:start()
     self:setupAudiodeviceCallbacks()
 
     if self.honorZoomMuteStatus then
-      self.audiodevicestate = {}
-      self.log.df(
-        "Starting Zom mute timer (interval: %d)",
-        self.zoomMuteTimerInterval)
-      self.zoomMuteTimer = hs.timer.doEvery(
-        self.zoomMuteTimerInterval,
-        hs.fnutils.partial(self.zoomMuteTimerFunction, self))
-      self.zoomMuteTimer:start()
+      self.log.d("Starting Zoom mute monitor")
+      self.ZMM:setCallback(function(muteState) self:updateAllIndicators() end)
+      self.ZMM:start()
     end
   end
 
@@ -238,7 +228,7 @@ function WW:stop()
         m:watcherStop()
       end)
     if honorZoomMuteStatus then
-      self.zoomMuteTimer:stop()
+      self.ZMM:stop()
     end
   end
 
@@ -555,70 +545,6 @@ function WW:audiodeviceCallback(uid, eventname, scope, element)
     end
     self:updateAllIndicators(dev)
   end
-end
-
--- WatcherWatcher:checkAudiodeviceForChange()
--- Check status of audiodevice against what is in self.audiodevicestate
--- (table keyed by uids, with false == not in use, true == in use)
--- and invoke state changes as approproate.
---
--- Parameters:
---   * hs.audiodevice instance
---
--- Returns:
---   * Nothing
-function WW:checkAudiodeviceForChange(device)
-  local oldstate = self.audiodevicestate[device:uid()] or false
-  local state = device:inUse()
-  if state and self.honorZoomMuteStatus then
-    if self:checkZoomMuted() then
-      -- Zoom is running and has audio muted. Treat mic as muted.
-      -- This isn't perfect as we don't know for sure that Zoom
-      -- has the microphone open.
-      state = false
-    end
-  end
-  if state ~= oldstate then
-    self.log.df(
-        "Detected change in audio device %s status. Updating indicators",
-        device.name)
-    self.audiodevicestate[device:uid()] = state
-    self:updateAllIndicators(device)
-  end
-end
-
--- WatcherWatcher:zoomMuteTimerFunction()
---
--- Called by zoomMuteTimer
-function WW:zoomMuteTimerFunction()
-  -- Check for state change, taking Zoom mute into account
-  -- Update indicators if state change has occurred.
-  hs.fnutils.ieach(
-    hs.audiodevice.allInputDevices(),
-    hs.fnutils.partial(self.checkAudiodeviceForChange, self))
-end
-
--- WatcherWatcher:checkZoomMuted()
--- Is Zoom running and muted? Intended for use with honorZoomMuteStatus
--- Note, this is imperfect as we don't know for sure Zoom has a particular
--- microphone muted.
---
--- Parameters:
---   * None
---
--- Returns:
---   * True if Zoom running and muted, false otherwise
-function WW:checkZoomMuted()
-  local zoomApp = hs.application.get("zoom.us")
-  if zoomApp then
-    if zoomApp:findMenuItem({ "Meeting", "Unmute Audio" }) then
-      -- Zoom is running and has audio muted. Treat mic as muted.
-      -- This isn't perfect as we don't know for sure that Zoom
-      -- has the microphone open.
-      return true
-    end
-  end
-  return false
 end
 
 return WW
