@@ -92,13 +92,13 @@ end
 
 --- WatcherWatcher:init()
 --- Method
---- Initializes the WW spoon
+--- Initializes the WatcherWatcher spoon
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * WW object
+---  * WatcherWatcher object
 
 function WW:init()
   -- Set up logger for spoon
@@ -131,7 +131,7 @@ end
 ---  * None
 ---
 --- Returns:
----  * WW object
+---  * WatcherWatcher object
 function WW:start()
   self.log.d("Starting")
 
@@ -213,7 +213,7 @@ end
 ---  * None
 ---
 --- Returns:
----  * WW object
+---  * WatcherWatcher object
 function WW:stop()
   self.log.d("Stopping")
 
