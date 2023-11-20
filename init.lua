@@ -234,7 +234,9 @@ function WW:stop()
 
   hs.fnutils.each(self.indicators,
     function(indicator)
-      local ok, err = pcall(function() indicator.delete() end)
+      local ok, err = xpcall(
+        function() indicator.delete() end,
+        debug.traceback)
       if not ok then
         self.log.ef("Error calling indicator.delete(): %s", err)
       end
@@ -258,7 +260,9 @@ function WW:mute()
 
   hs.fnutils.each(self.indicators,
     function(indicator)
-      local ok, err = pcall(function() indicator:mute() end)
+      local ok, err = xpcall(
+        function() indicator:mute() end,
+        debug.traceback)
       if not ok then
         self.log.ef("Error calling indicator.mute(): %s", err)
       end
@@ -408,7 +412,9 @@ function WW:updateAllIndicators(instigator)
   self.log.df("Updating %s indicators", #self.indicators)
   hs.fnutils.each(self.indicators,
     function(indicator)
-      local ok, err = pcall(function() indicator:update(instigator) end)
+      local ok, err = xpcall(
+        function() indicator:update(instigator) end,
+        debug.traceback)
       if not ok then
         self.log.ef("Error calling indicator.update callback: %s", err)
       end
@@ -428,7 +434,9 @@ function WW:refreshAllIndicators()
   self.log.df("Refreshing %d indicators", #self.indicators)
   hs.fnutils.each(self.indicators,
     function(indicator)
-      local ok, err = pcall(function() indicator:refresh() end)
+      local ok, err = xpcall(
+        function() indicator:refresh() end,
+        debug.traceback)
       if not ok then
         self.log.ef("Error calling indicator.refresh callback: %s", err)
       end

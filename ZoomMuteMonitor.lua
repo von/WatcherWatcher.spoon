@@ -180,7 +180,10 @@ function ZMM:timerFunction()
   if self.lastZoomMuteState == nil or muteState ~= self.lastZoomMuteState then
     self.log.df("Mute state changed: %s", muteState)
     self.lastZoomMuteState = muteState
-    local ok, err = pcall(function() self.callback(muteState) end)
+    local ok, err = xpcall(
+      function() self.callback(muteState) end,
+      debug.traceback
+    )
     if not ok then
       self.log.ef("Error calling callback: %s", err)
     end
