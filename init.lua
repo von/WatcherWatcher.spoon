@@ -115,6 +115,9 @@ function WW:init()
   -- List of Indicator instances we are driving.
   self.indicators = {}
 
+  -- Table of audiodevices, indexed by UID. Used by setupAudiodeviceCallbacks()
+  self.audiodevices = {}
+
   return self
 end
 
@@ -522,10 +525,16 @@ function WW:setupAudiodeviceCallbacks()
   local callback = hs.fnutils.partial(self.audiodeviceCallback, self)
   hs.fnutils.each(hs.audiodevice.allInputDevices(),
     function(m)
-      if not m:watcherIsRunning() then
+      -- Check to see if we have already seen this device and started
+      -- its watcher. Watcher state is not maintained across device objects.
+      -- See: https://github.com/Hammerspoon/hammerspoon/issues/3559
+      if not self.audiodevices[m:uid()] then
+        -- Have not seen device before, start watcher
         self.log.df("Starting watcher on microphone %s (%s)", m:name(), m:uid())
         m:watcherCallback(callback)
         m:watcherStart()
+        -- And track device
+        self.audiodevices[m:uid()] = m
       end
     end)
 end
