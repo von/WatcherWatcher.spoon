@@ -192,29 +192,30 @@ end
 --
 -- Parameters:
 --   * hs.geometry instance
+--     Note this is passed by reference, see:
+--     https://stackoverflow.com/a/6128322/197789
 --
 -- Returns:
 --   * hs.geometry instance modified relative to primary screen
 function Indicator:relativeGeometry(geometry)
   local screenFrame = hs.screen.primaryScreen():frame()
   if geometry then
-    -- Make given geometry relative to primaryScreen
+    -- geometry is a reference, copy it so we don't modify original
+    geometry = hs.geometry.copy(geometry)
+
     -- Handle negative x or y as offsets from right or bottom
-    geometry.x = screenFrame.x + self.geometry.x
-    if self.geometry.x < 0 then
+    if geometry.x < 0 then
       geometry.x = geometry.x + screenFrame.w
     end
-    geometry.y = screenFrame.y + self.geometry.y
-    if self.geometry.y < 0 then
+    if geometry.y < 0 then
       geometry.y = geometry.y + screenFrame.h
     end
+    -- Make given geometry relative to primaryScreen
+    geometry.x = screenFrame.x + geometry.x
+    geometry.y = screenFrame.y + geometry.y
   else
     -- No geometry given, use ScreenFrame
-    geometry = {}
-    geometry.x = screenFrame.x
-    geometry.y = screenFrame.y
-    geometry.w = screenFrame.w
-    geometry.h = screenFrame.h
+    geometry = hs.geometry.copy(screenFrame)
   end
 
   return geometry
