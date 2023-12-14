@@ -14,6 +14,23 @@
 --- setting WatcherWatcher.enableMenubar and/or
 --- WatcherWatcher.enableDefaultIndicators to false before
 --- calling WatcherWatcher:start().
+---
+--- Example of adding two indicators:
+---
+--- -- Red flashing indicator in uppoer right for cameras
+--- ww:addIndicator(ww.Flasher:new("cameras",
+---    {
+---      showFilter = ww.cameraInUse
+---    }))
+---
+--- -- Yellow non-flashing indicator in upper left for microphones
+--- ww:addIndicator(ww.Flasher:new("microphones",
+---    {
+---      showFilter = ww.micInUse,
+---      geometry = { x = 20, y = 20, w = 20, h = 20 },
+---      fillColor = { alpha = 1.0, red = 1.0, green = 0.67 },
+---      blinkInterval = 0
+---  }))
 
 local WW = {}
 
