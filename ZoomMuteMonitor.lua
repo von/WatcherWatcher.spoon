@@ -129,6 +129,15 @@ function ZMM:muted()
   local zoomApp = hs.application.get("zoom.us")
   if zoomApp then
     -- Zoom is running
+    -- If Zoom is waiting for a meeting to start, it still shows
+    -- the "Mute Audio" menu option which will give us a false positive.
+    -- So we check for a "Zoom Meeting" window to make sure we're in
+    -- a meeting.
+    if not zoomApp:findWindow("Zoom Meeting") then
+      -- Not in a meeting.
+      return false
+    end
+    -- We're apparently in a meeting, see if we're muted.
     if zoomApp:findMenuItem({ "Meeting", "Unmute Audio" }) then
       -- Zoom has audio muted.
       return true
