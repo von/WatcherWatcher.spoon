@@ -1,6 +1,13 @@
 --- === WatcherWatcher.Menubar ===
---- Callback for WatcherWatcher to create a menubar item when a microphone
---- or camera is in use.
+--- Menubar item that shows state of microphones and cameras:
+---   Green dot: Nothing in use and indicators are unmuted.
+---   Yellow dot: Nothing in use but indicators are muted.
+---   Orange dot: Camera or microphone in use but indicators are muted.
+---   Red dot: Camera or microphone in use and indicators are unmuted.
+---
+--- The menu for the menubar consists of a mute/unmute item and a list
+--- of all currently active cameras and microphones (which are inert and
+--- selecting them does nothing).
 
 -- Menubar is a subclass of WatcherWatcher.Indicator
 local Indicator = dofile(hs.spoons.resourcePath("Indicator.lua"))
@@ -10,6 +17,8 @@ local MB = Indicator:subclass()
 -- Characters to potential use in the menubar title or menu itself
 MB.GREEN_DOT = "🟢"
 MB.RED_DOT = "🔴"
+MB.YELLOW_DOT = "🟡"  -- U+1F7E1
+MB.ORANGE_DOT = "🟠"  -- U+1F7E0
 MB.ORANGE_DIAMOND = "🔶"  -- U+1F536
 MB.CAMERA = "📷"
 MB.MICROPHONE = "🎙"
@@ -20,12 +29,15 @@ MB.MICROPHONE = "🎙"
 ---   * cameraInUse: Menubar title if a camera is in use.
 ---   * micInUse: Menubar title if a microphone is in use.
 ---   * cameraAndMicInUse: Menubar title if a camera and a microphone are in use.
----   * nothingInUse: Menubar title if nothing is in use.
+---   * muted: Something is in use, but we are muted.
+---   * nothingInUse: Menubar title if nothing is in use (even if muted)
 MB.title = {
   cameraInUse =  MB.RED_DOT,
   micInUse =  MB.RED_DOT,
   cameraAndMicInUse = MB.RED_DOT,
-  nothingInUse = MB.GREEN_DOT
+  inUseButMuted = MB.ORANGE_DOT,
+  nothingInUse = MB.GREEN_DOT,
+  nothingInUseMuted = MB.YELLOW_DOT
 }
 
 --- Menubar.monitorCameras
@@ -37,11 +49,6 @@ MB.monitorCameras = true
 --- Variable
 --- If true, includes microphones in menubar. Default is true.
 MB.monitorMics = true
-
---- Menubar.menubarIfNothingInUse
---- Variable
---- If true, be present on menubar if nothing is in use.
-MB.menubarIfNothingInUse = false
 
 --- Menubar:init()
 --- Method
@@ -55,6 +62,8 @@ function MB:init(ww)
   self.ww = ww
   -- Set up logger
   self.log = hs.logger.new("Menubar")
+
+  self.muted = false
 
   return self
 end
@@ -96,7 +105,7 @@ end
 ---   * Menubar instance
 function MB:start(ww)
   -- First agument is whether item starts in menubar
-  self.menubar = hs.menubar.new(self.menubarIfNothingInUse)
+  self.menubar = hs.menubar.new(true)
   -- Create menu on demand so we show active cameras and microphones.
   self.menubar:setMenu(hs.fnutils.partial(self.menubarCallback, self))
   self:update()
@@ -134,7 +143,17 @@ function MB:update(instigator)
   -- Note that ordering of returnToMenuBar() and setTitle() calls here
   -- is important as calling setTitle() first seems to result in
   -- the it not taking effect.
-  if cameraInUse and micInUse then
+  if self.muted then
+    if cameraInUse or micInUse then
+      self.log.d("Updating menubar icon: muted")
+      self.menubar:returnToMenuBar()
+      self.menubar:setTitle(self.title.inUseButMuted)
+    else
+      self.log.d("Updating menubar icon: nothing in use but muted")
+      self.menubar:returnToMenuBar()
+      self.menubar:setTitle(self.title.nothingInUseMuted)
+    end
+  elseif cameraInUse and micInUse then
     self.log.d("Updating menubar icon: Camera and microphone in use")
     self.menubar:returnToMenuBar()
     self.menubar:setTitle(self.title.cameraAndMicInUse)
@@ -148,12 +167,8 @@ function MB:update(instigator)
     self.menubar:setTitle(self.title.micInUse)
   else
     self.log.d("Updating menubar icon: Nothing in use")
-    if self.menubarIfNothingInUse then
-      self.menubar:returnToMenuBar()
-      self.menubar:setTitle(self.title.nothingInUse)
-    else
-      self.menubar:removeFromMenuBar()
-    end
+    self.menubar:returnToMenuBar()
+    self.menubar:setTitle(self.title.nothingInUse)
   end
 end
 
@@ -187,7 +202,6 @@ end
 
 --- Menubar:mute()
 --- Method
---- Does nothing.
 ---
 --- Parameters:
 ---   * None
@@ -195,7 +209,24 @@ end
 --- Returns:
 ---   * Nothing
 function MB:mute()
-  self.log.d("mute() called - doing nothing")
+  self.log.d("mute() called")
+  self.muted = true
+  self:update()
+end
+
+--- Menubar:unmute()
+--- Method
+--- Callback for unmute menu item.
+---
+--- Parameters:
+---   * None
+---
+--- Returns:
+---   * Nothing
+function MB:unmute()
+  self.log.d("unmute() called")
+  self.muted = false
+  self:update()
 end
 
 --- Menubar:delete()
@@ -224,8 +255,14 @@ end
 ---   * table with menu - see hs.menubar.setMenu()
 function MB:menubarCallback(modifiers)
   local t = {}
-  table.insert(t,
-    { title = "Mute Indicators", fn = function() self.ww:mute() end })
+  -- Calling ww:mute()/unmute() should drive our own mute()/unmute() method
+  if self.muted then
+    table.insert(t,
+      { title = "Unmute Indicators", fn = function() self.ww:unmute() end })
+  else
+    table.insert(t,
+      { title = "Mute Indicators", fn = function() self.ww:mute() end })
+  end
   if self.monitorCameras then
     hs.fnutils.each(self.ww:camerasInUse(),
       function(c)

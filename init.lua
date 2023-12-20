@@ -267,8 +267,7 @@ end
 
 --- WatcherWatcher:mute()
 --- Method
---- Mute any visual indicators until something further causes them
---- to re-start.
+--- Mute any visual indicators until unmuted.
 ---
 --- Parameters:
 ---  * None
@@ -285,6 +284,29 @@ function WW:mute()
         debug.traceback)
       if not ok then
         self.log.ef("Error calling indicator.mute(): %s", err)
+      end
+    end)
+end
+
+--- WatcherWatcher:unmute()
+--- Method
+--- Allow indicators to be visible.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Nothing
+function WW:unmute()
+  self.log.d("Unmuting")
+
+  hs.fnutils.each(self.indicators,
+    function(indicator)
+      local ok, err = xpcall(
+        function() indicator:unmute() end,
+        debug.traceback)
+      if not ok then
+        self.log.ef("Error calling indicator.unmute(): %s", err)
       end
     end)
 end

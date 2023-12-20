@@ -136,6 +136,8 @@ function Indicator:new(cls, name, options)
     return nil
   end
 
+  self.muted = false
+
   return s
 end
 
@@ -234,7 +236,7 @@ end
 ---   * None
 function Indicator:update(instigator)
   -- Assume showFilter is a WatcherWatcher method and include ww for self
-  if self.showFilter(self.ww) then
+  if not self.muted and self.showFilter(self.ww) then
     self:show()
   else
     self:hide()
@@ -277,7 +279,7 @@ end
 
 --- Indicator:mute()
 --- Method
---- Temporarly hide the indicator until some state changes..
+--- Hide the indicator until unmuted.
 --- Parameters:
 ---   * None
 ---
@@ -285,7 +287,22 @@ end
 ---   * Nothing
 function Indicator:mute()
   self.log.d("Muting indicator")
+  self.muted = true
   self:hide()
+end
+
+--- Indicator:unmute()
+--- Method
+--- Allow the indicator to be shown.
+--- Parameters:
+---   * None
+---
+--- Returns:
+---   * Nothing
+function Indicator:unmute()
+  self.log.d("Unmuting indicator")
+  self.muted = false
+  self:update()
 end
 
 --- Indicator:delete()
