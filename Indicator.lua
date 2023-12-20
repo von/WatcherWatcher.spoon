@@ -149,7 +149,7 @@ end
 ---   * Nothing
 function Indicator:refresh()
   if self.canvas then
-    self.canvas:delete()
+    -- delete() not required, garbage collection will handle
     self.canvas = nil
   end
   self.canvas = self:createCanvas()
@@ -299,7 +299,7 @@ end
 function Indicator:delete()
   self.log.d("Deleting indicator")
   if self.canvas then
-    self.canvas:delete()
+    -- delete() not required, garbage collection will handle
     self.canvas = nil
   end
 end
