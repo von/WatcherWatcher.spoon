@@ -150,6 +150,7 @@ end
 --- Returns:
 ---   * Nothing
 function Indicator:refresh()
+  -- We delete the canvas and recreate it to refresh it.
   if self.canvas then
     -- delete() not required, garbage collection will handle
     self.canvas = nil
