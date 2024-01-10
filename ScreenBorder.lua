@@ -6,10 +6,15 @@
 local Indicator = dofile(hs.spoons.resourcePath("Indicator.lua"))
 local SB = Indicator:subclass()
 
---- ScreenBorder:width
+--- ScreenBorder:widthPercentage
 --- Variable
---- Width of border as percentage of screen.
-SB.widthPercentage = 0.5
+--- Width of vertical border at sides as percentage of screen.
+SB.widthPercentage = 0.3
+
+--- ScreenBorder:heightPercentage
+--- Variable
+--- Height of horizontal border at top and bottom as percentage of screen.
+SB.heightPercentage = 0.5
 
 --- ScreenBorder:microphoneInUseColor
 --- Variable
@@ -82,8 +87,11 @@ function SB:createCanvas()
   local canvas = Indicator.createCanvas(self)
 
   -- Fill canvas with a border
-  local xy = string.format("%f%%", self.widthPercentage)
-  local hw = string.format("%f%%", 100 - self.widthPercentage * 2)
+  -- Following are the insides of the border
+  local insideTop = string.format("%f%%", self.heightPercentage)
+  local insideLeft = string.format("%f%%", self.widthPercentage)
+  local insideHeight = string.format("%f%%", 100 - self.heightPercentage * 2)
+  local insideWidth = string.format("%f%%", 100 - self.widthPercentage * 2)
 
   -- For an explaination of what is going on here, see:
   --   https://github.com/Hammerspoon/hammerspoon/issues/1331
@@ -93,7 +101,10 @@ function SB:createCanvas()
 
     },{ -- Remove inside of rectangle (note reversePath)
       type = "rectangle",
-      frame = { x = xy, y = xy, h = hw, w = hw },
+      frame = {
+        x = insideLeft, y = insideTop,
+        h = insideHeight, w = insideWidth
+      },
       reversePath = true,
       action = "clip"
 
