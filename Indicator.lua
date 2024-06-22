@@ -152,7 +152,7 @@ end
 function Indicator:refresh()
   -- We delete the canvas and recreate it to refresh it.
   if self.canvas then
-    -- delete() not required, garbage collection will handle
+    self.canvas:delete()
     self.canvas = nil
   end
   self.canvas = self:createCanvas()
@@ -317,7 +317,7 @@ end
 function Indicator:delete()
   self.log.d("Deleting indicator")
   if self.canvas then
-    -- delete() not required, garbage collection will handle
+    self.canvas:delete()
     self.canvas = nil
   end
 end
