@@ -138,7 +138,11 @@ function ZMM:muted()
       return false
     end
     -- We're apparently in a meeting, see if we're muted.
-    if zoomApp:findMenuItem({ "Meeting", "Unmute Audio" }) then
+    -- Zoom changed from "audio" with an uppercase "A" to
+    -- "audio" with a lowercase "a" at some point, so check
+    -- for both.
+    if zoomApp:findMenuItem({ "Meeting", "Unmute Audio" }) or
+      zoomApp:findMenuItem({ "Meeting", "Unmute audio" }) then
       -- Zoom has audio muted.
       return true
     end
